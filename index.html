@@ -2,257 +2,437 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>AranyaController V5</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg:       #121212;
-    --card:     #1e1e1e;
-    --border:   #2c2c2c;
-    --text:     #ffffff;
-    --muted:    #9e9e9e;
-    --green:    #4caf50;
-    --red:      #f44336;
-    --cyan:     #00bcd4;
-    --yellow:   #ffc107;
-    --blue:     #2196f3;
+    --bg:         #0a0e12;
+    --surface:    #111820;
+    --surface2:   #1a2330;
+    --border:     #1e2d3d;
+    --text:       #e8f0f8;
+    --muted:      #5a7a96;
+    --green:      #00e676;
+    --green-dim:  #00c853;
+    --red:        #ff3d57;
+    --cyan:       #00e5ff;
+    --yellow:     #ffd740;
+    --blue:       #448aff;
+    --orange:     #ff6d00;
+    --mono:       'Space Mono', monospace;
+    --sans:       'DM Sans', sans-serif;
   }
+
   * { box-sizing: border-box; margin: 0; padding: 0; }
+
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: var(--sans);
     background: var(--bg);
     color: var(--text);
+    min-height: 100vh;
     padding: 16px;
-    max-width: 480px;
-    margin: 0 auto;
+    padding-bottom: 40px;
   }
-  h1 {
-    color: var(--green);
-    font-size: 20px;
+
+  /* ── Header ── */
+  .header {
     text-align: center;
-    margin-bottom: 4px;
+    margin-bottom: 20px;
+    padding-top: 12px;
   }
-  .subtitle {
+  .header-title {
+    font-family: var(--mono);
+    font-size: 18px;
+    color: var(--cyan);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .header-sub {
+    font-size: 12px;
     color: var(--muted);
-    font-size: 13px;
-    text-align: center;
-    margin-bottom: 16px;
+    margin-top: 3px;
+    letter-spacing: 1px;
   }
+
+  /* ── Cards ── */
   .card {
-    background: var(--card);
+    background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px;
+    border-radius: 12px;
+    padding: 14px;
     margin-bottom: 12px;
   }
   .card-label {
-    font-size: 11px;
+    font-family: var(--mono);
+    font-size: 10px;
     color: var(--muted);
+    letter-spacing: 1.5px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 6px;
+    margin-bottom: 10px;
   }
-  /* Status dot */
+
+  /* ── Setup screen ── */
+  #setupScreen { display: block; }
+  #mainScreen  { display: none; }
+
+  .setup-title {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--yellow);
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+  .setup-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 14px;
+  }
+  .setup-desc strong { color: var(--cyan); }
+
+  /* ── Status row ── */
   .status-row {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
+    gap: 10px;
+    margin-bottom: 10px;
   }
-  .dot {
-    width: 10px; height: 10px;
+  .indicator {
+    width: 8px; height: 8px;
     border-radius: 50%;
     background: var(--red);
     flex-shrink: 0;
+    box-shadow: 0 0 6px var(--red);
+    transition: background 0.3s, box-shadow 0.3s;
   }
-  .dot.on { background: var(--green); }
-  #statusText { font-size: 14px; color: var(--red); }
-  #statusText.on { color: var(--green); }
-  /* Clock */
-  #tvDate { font-size: 15px; color: var(--text); margin-bottom: 2px; }
-  #tvTime { font-size: 28px; font-weight: bold; color: var(--cyan); margin-bottom: 10px; }
-  /* Output status */
+  .indicator.on {
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+  }
+  .indicator.warn {
+    background: var(--yellow);
+    box-shadow: 0 0 8px var(--yellow);
+  }
+  #statusText {
+    font-size: 13px;
+    color: var(--red);
+    font-family: var(--mono);
+    transition: color 0.3s;
+  }
+  #statusText.on   { color: var(--green); }
+  #statusText.warn { color: var(--yellow); }
+
+  /* ── Clock ── */
+  #tvDate {
+    font-size: 14px;
+    color: var(--muted);
+    font-family: var(--mono);
+    margin-bottom: 2px;
+  }
+  #tvTime {
+    font-family: var(--mono);
+    font-size: 32px;
+    color: var(--cyan);
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+
+  /* ── Output grid ── */
   .output-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
+  }
+  .output-cell {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 6px;
     text-align: center;
   }
-  .output-item .label { font-size: 11px; color: var(--muted); }
-  .output-item .value {
-    font-size: 20px;
-    font-weight: bold;
+  .output-cell .ol { font-size: 10px; color: var(--muted); letter-spacing: 1px; font-family: var(--mono); margin-bottom: 4px; }
+  .output-cell .ov {
+    font-family: var(--mono);
+    font-size: 18px;
+    font-weight: 700;
     color: var(--red);
+    transition: color 0.3s;
   }
-  .output-item .value.on { color: var(--green); }
-  /* Buttons */
-  btn, button {
+  .output-cell .ov.on { color: var(--green); }
+
+  /* ── Buttons ── */
+  .btn {
     display: block;
     width: 100%;
-    padding: 12px;
+    padding: 13px;
     border: none;
     border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 1px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
     margin-bottom: 8px;
   }
-  .btn-green  { background: var(--green);  color: #121212; }
-  .btn-cyan   { background: var(--cyan);   color: #121212; }
-  .btn-yellow { background: var(--yellow); color: #121212; }
-  .btn-blue   { background: var(--blue);   color: #ffffff; }
-  .btn-red    { background: var(--red);    color: #ffffff; }
-  .btn-gray   { background: #424242;       color: #ffffff; }
-  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .btn:last-child { margin-bottom: 0; }
+
+  .btn-cyan   { background: var(--cyan);    color: #0a0e12; }
+  .btn-green  { background: var(--green);   color: #0a0e12; }
+  .btn-yellow { background: var(--yellow);  color: #0a0e12; }
+  .btn-blue   { background: var(--blue);    color: #fff; }
+  .btn-red    { background: var(--red);     color: #fff; }
+  .btn-ghost  {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+
   .btn-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 8px;
   }
-  .btn-row button { margin-bottom: 0; }
-  /* Schedule slots */
+  .btn-row .btn { margin-bottom: 0; }
+
+  /* ── Schedule slots ── */
+  .sched-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    margin-top: 4px;
+  }
+  .sched-title.light { color: var(--yellow); }
+  .sched-title.pump  { color: var(--blue); }
+
   .slot-row {
     display: flex;
     align-items: center;
-    background: var(--card);
+    background: var(--surface2);
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 10px;
-    margin-bottom: 8px;
-    gap: 8px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    gap: 10px;
   }
-  .slot-info { flex: 1; }
-  .slot-info .slot-num { font-size: 12px; color: var(--muted); }
-  .slot-info .slot-val { font-size: 14px; color: var(--text); }
-  .slot-row button {
+  .slot-info { flex: 1; min-width: 0; }
+  .slot-num  { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+  .slot-val  { font-size: 13px; color: var(--text); font-family: var(--mono); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .slot-btns { display: flex; gap: 6px; flex-shrink: 0; }
+  .slot-btns .btn {
     width: auto;
-    padding: 6px 14px;
-    font-size: 12px;
+    padding: 6px 12px;
+    font-size: 10px;
     margin-bottom: 0;
     border-radius: 6px;
   }
-  .sched-section-title {
-    font-size: 12px;
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 6px;
+
+  /* ── Device info bar ── */
+  .device-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 12px;
   }
-  .sched-section-title.light { color: var(--yellow); }
-  .sched-section-title.pump  { color: var(--blue); }
-  /* Modal overlay */
+  .device-mac {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .device-mac span { color: var(--cyan); }
+  .btn-forget {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--red);
+    background: none;
+    border: none;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    padding: 0;
+  }
+
+  /* ── Modal ── */
   .modal-overlay {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.7);
+    background: rgba(0,0,0,0.75);
     z-index: 100;
     align-items: center;
     justify-content: center;
+    padding: 20px;
   }
   .modal-overlay.show { display: flex; }
   .modal {
-    background: var(--card);
+    background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 12px;
+    border-radius: 14px;
     padding: 20px;
-    width: 90%;
+    width: 100%;
     max-width: 340px;
   }
-  .modal h3 { margin-bottom: 16px; color: var(--cyan); font-size: 16px; }
-  .modal label { font-size: 13px; color: var(--muted); display: block; margin-bottom: 4px; margin-top: 12px; }
-  .modal input[type=time], .modal input[type=checkbox] {
+  .modal h3 {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--cyan);
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+  }
+  .modal label {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: var(--mono);
+    display: block;
+    margin-bottom: 4px;
+    margin-top: 12px;
+  }
+  .modal input[type=time] {
     width: 100%;
-    padding: 10px;
-    background: var(--bg);
+    padding: 10px 12px;
+    background: var(--surface2);
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: 8px;
     color: var(--text);
+    font-family: var(--mono);
     font-size: 16px;
   }
-  .modal input[type=checkbox] { width: auto; margin-right: 8px; }
-  .modal .check-row { display: flex; align-items: center; margin-top: 14px; }
+  .modal input[type=time]:focus { outline: none; border-color: var(--cyan); }
+  .check-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+  }
+  .check-row input { width: 18px; height: 18px; cursor: pointer; accent-color: var(--cyan); }
+  .check-row span { font-size: 13px; color: var(--text); }
   .modal-btns { display: flex; gap: 8px; margin-top: 16px; }
-  .modal-btns button { flex: 1; }
-  /* Toast */
+  .modal-btns .btn { flex: 1; margin-bottom: 0; }
+
+  /* ── Toast ── */
   #toast {
     position: fixed;
-    bottom: 24px;
+    bottom: 30px;
     left: 50%;
     transform: translateX(-50%);
-    background: #333;
-    color: #fff;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
     padding: 10px 20px;
     border-radius: 20px;
-    font-size: 13px;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.5px;
     opacity: 0;
     transition: opacity 0.3s;
     pointer-events: none;
     z-index: 200;
+    white-space: nowrap;
   }
   #toast.show { opacity: 1; }
+
+  /* ── Pulse animation for connecting ── */
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+  }
+  .pulsing { animation: pulse 1.2s ease-in-out infinite; }
 </style>
 </head>
 <body>
 
-<h1>AranyaController V5</h1>
-<p class="subtitle">WiFi Dashboard</p>
-
-<!-- Connection card -->
-<div class="card">
-  <div class="status-row">
-    <div class="dot" id="statusDot"></div>
-    <span id="statusText">Not connected</span>
-  </div>
-  <button class="btn-green" id="btnConnect" onclick="toggleConnect()">Connect</button>
+<div class="header">
+  <div class="header-title">AranyaController V5</div>
+  <div class="header-sub">Remote Dashboard</div>
 </div>
 
-<!-- Device clock card -->
-<div class="card">
-  <div class="card-label">Device Clock</div>
-  <div id="tvDate">--/--/----</div>
-  <div id="tvTime">--:-- --</div>
-  <button class="btn-cyan" onclick="syncTime()" id="btnSync" disabled>Sync Phone Time to Device</button>
-</div>
-
-<!-- Output status card -->
-<div class="card">
-  <div class="card-label">Output Status</div>
-  <div class="output-grid">
-    <div class="output-item">
-      <div class="label">LIGHT</div>
-      <div class="value" id="tvLight">---</div>
+<!-- ── Setup screen (shown when no MAC saved) ── -->
+<div id="setupScreen">
+  <div class="card">
+    <div class="setup-title">First Time Setup</div>
+    <div class="setup-desc">
+      Connect your phone to the <strong>same WiFi</strong> as the device, then tap below to discover it automatically.
+      After that, this page works from <strong>anywhere</strong> using mobile data.
     </div>
-    <div class="output-item">
-      <div class="label">PUMP</div>
-      <div class="value" id="tvPump">---</div>
-    </div>
-    <div class="output-item">
-      <div class="label">WATER</div>
-      <div class="value" id="tvWater">---</div>
-    </div>
+    <button class="btn btn-cyan" onclick="discoverDevice()">Discover Device on Local WiFi</button>
+    <button class="btn btn-ghost" onclick="enterMacManually()" style="margin-top:4px">Enter MAC manually</button>
   </div>
 </div>
 
-<!-- Manual trigger card -->
-<div class="card">
-  <div class="card-label">Manual Trigger</div>
-  <div class="btn-row">
-    <button class="btn-yellow" onclick="triggerLight()" id="btnLight" disabled>Trigger Light</button>
-    <button class="btn-blue"   onclick="triggerPump()"  id="btnPump"  disabled>Trigger Pump</button>
-  </div>
-</div>
+<!-- ── Main dashboard (shown after MAC discovered) ── -->
+<div id="mainScreen">
 
-<!-- Schedules card -->
-<div class="card">
-  <div class="sched-section-title light">Light Schedules</div>
-  <div id="lightSlots"></div>
-  <div class="sched-section-title pump" style="margin-top:12px">Pump Schedules</div>
-  <div id="pumpSlots"></div>
-  <button class="btn-red" onclick="clearAllSchedules()" id="btnClearAll" disabled style="margin-top:8px">Clear All Schedules</button>
-</div>
+  <!-- Device info bar -->
+  <div class="device-bar">
+    <div class="device-mac">MAC: <span id="macDisplay">—</span></div>
+    <button class="btn-forget" onclick="forgetDevice()">Forget Device</button>
+  </div>
+
+  <!-- Connection card -->
+  <div class="card">
+    <div class="status-row">
+      <div class="indicator" id="statusDot"></div>
+      <span id="statusText">Disconnected</span>
+    </div>
+    <button class="btn btn-green" id="btnConnect" onclick="toggleConnect()">Connect</button>
+  </div>
+
+  <!-- Clock card -->
+  <div class="card">
+    <div class="card-label">Device Clock</div>
+    <div id="tvDate">--/--/----</div>
+    <div id="tvTime">--:-- --</div>
+    <button class="btn btn-cyan" id="btnSync" onclick="syncTime()" disabled>Sync Phone Time to Device</button>
+  </div>
+
+  <!-- Output status card -->
+  <div class="card">
+    <div class="card-label">Output Status</div>
+    <div class="output-grid">
+      <div class="output-cell">
+        <div class="ol">LIGHT</div>
+        <div class="ov" id="tvLight">---</div>
+      </div>
+      <div class="output-cell">
+        <div class="ol">PUMP</div>
+        <div class="ov" id="tvPump">---</div>
+      </div>
+      <div class="output-cell">
+        <div class="ol">WATER</div>
+        <div class="ov" id="tvWater">---</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Trigger card -->
+  <div class="card">
+    <div class="card-label">Manual Trigger</div>
+    <div class="btn-row">
+      <button class="btn btn-yellow" id="btnLight" onclick="triggerLight()" disabled>Trigger Light</button>
+      <button class="btn btn-blue"   id="btnPump"  onclick="triggerPump()"  disabled>Trigger Pump</button>
+    </div>
+  </div>
+
+  <!-- Schedules card -->
+  <div class="card">
+    <div class="card-label">Schedules</div>
+    <div class="sched-title light">Light</div>
+    <div id="lightSlots"></div>
+    <div class="sched-title pump">Pump</div>
+    <div id="pumpSlots"></div>
+    <button class="btn btn-red" id="btnClearAll" onclick="clearAllSchedules()" disabled style="margin-top:10px">Clear All Schedules</button>
+  </div>
+
+</div><!-- end mainScreen -->
 
 <!-- Light schedule modal -->
 <div class="modal-overlay" id="lightModal">
@@ -264,11 +444,11 @@
     <input type="time" id="lightOffTime">
     <div class="check-row">
       <input type="checkbox" id="lightEnabled" checked>
-      <label style="margin:0;color:var(--text)">Enabled</label>
+      <span>Enabled</span>
     </div>
     <div class="modal-btns">
-      <button class="btn-gray"  onclick="closeLightModal()">Cancel</button>
-      <button class="btn-yellow" onclick="saveLightSchedule()">Save</button>
+      <button class="btn btn-ghost"  onclick="closeLightModal()">Cancel</button>
+      <button class="btn btn-yellow" onclick="saveLightSchedule()">Save</button>
     </div>
   </div>
 </div>
@@ -277,215 +457,292 @@
 <div class="modal-overlay" id="pumpModal">
   <div class="modal">
     <h3 id="pumpModalTitle">Pump Schedule</h3>
-    <label>ON Time</label>
+    <label>ON Time (runs 2 min)</label>
     <input type="time" id="pumpOnTime">
     <div class="check-row">
       <input type="checkbox" id="pumpEnabled" checked>
-      <label style="margin:0;color:var(--text)">Enabled</label>
+      <span>Enabled</span>
     </div>
     <div class="modal-btns">
-      <button class="btn-gray" onclick="closePumpModal()">Cancel</button>
-      <button class="btn-blue" onclick="savePumpSchedule()">Save</button>
+      <button class="btn btn-ghost" onclick="closePumpModal()">Cancel</button>
+      <button class="btn btn-blue"  onclick="savePumpSchedule()">Save</button>
     </div>
   </div>
 </div>
 
 <div id="toast"></div>
 
+<!-- MQTT.js via CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/5.3.4/mqtt.min.js"></script>
+
 <script>
-// ── Config ────────────────────────────────────────────────────────
-const DEVICE_URL = 'http://aranya-ctrl.local';
-const POLL_MS    = 3000;
+// ── EMQX broker config ────────────────────────────────────────────
+const BROKER_HOST = 'o2f8f1bb.ala.asia-southeast1.emqxsl.com';
+const BROKER_PORT = 8084;        // WSS port on EMQX serverless
+const BROKER_USER = 'AranyaAdmin';
+const BROKER_PASS = '123Smart@';
+const LOCAL_URL   = 'http://aranya-ctrl.local';
 
 // ── State ─────────────────────────────────────────────────────────
-let connected    = false;
-let pollTimer    = null;
-let editSlot     = -1;
-let editType     = '';
-let lastState    = null;
+let mqttClient  = null;
+let connected   = false;
+let deviceMAC   = null;
+let topicCmd    = null;
+let topicState  = null;
+let lastState   = null;
+let editSlot    = -1;
 
-// ── Connection ────────────────────────────────────────────────────
+// ── Init ──────────────────────────────────────────────────────────
+window.onload = function() {
+  deviceMAC = localStorage.getItem('aranya_mac');
+  if (deviceMAC) {
+    showMainScreen();
+  }
+};
+
+// ── Setup screen ──────────────────────────────────────────────────
+async function discoverDevice() {
+  const btn = document.querySelector('#setupScreen .btn-cyan');
+  btn.textContent = 'Discovering…';
+  btn.disabled = true;
+  try {
+    const res = await fetch(`${LOCAL_URL}/state`, {
+      signal: AbortSignal.timeout(6000)
+    });
+    if (!res.ok) throw new Error('Bad response');
+    const data = await res.json();
+    if (!data.mac) throw new Error('No MAC in response');
+    saveMac(data.mac);
+    toast('Device found: ' + data.mac);
+    showMainScreen();
+  } catch(e) {
+    toast('Discovery failed — ensure same WiFi as device');
+    btn.textContent = 'Discover Device on Local WiFi';
+    btn.disabled = false;
+  }
+}
+
+function enterMacManually() {
+  const mac = prompt('Enter device MAC address (e.g. 2805A533283C):');
+  if (mac && mac.length === 12) {
+    saveMac(mac.toUpperCase());
+    showMainScreen();
+  } else if (mac) {
+    toast('Invalid MAC — must be 12 characters');
+  }
+}
+
+function saveMac(mac) {
+  deviceMAC  = mac.replace(/:/g, '').toUpperCase();
+  topicCmd   = `aranyasmart/${deviceMAC}/cmd`;
+  topicState = `aranyasmart/${deviceMAC}/state`;
+  localStorage.setItem('aranya_mac', deviceMAC);
+  document.getElementById('macDisplay').textContent = deviceMAC;
+}
+
+function forgetDevice() {
+  if (!confirm('Forget this device? You will need to rediscover it.')) return;
+  localStorage.removeItem('aranya_mac');
+  if (mqttClient) mqttClient.end(true);
+  mqttClient = null;
+  connected  = false;
+  deviceMAC  = null;
+  document.getElementById('setupScreen').style.display = 'block';
+  document.getElementById('mainScreen').style.display  = 'none';
+}
+
+function showMainScreen() {
+  topicCmd   = `aranyasmart/${deviceMAC}/cmd`;
+  topicState = `aranyasmart/${deviceMAC}/state`;
+  document.getElementById('macDisplay').textContent    = deviceMAC;
+  document.getElementById('setupScreen').style.display = 'none';
+  document.getElementById('mainScreen').style.display  = 'block';
+  renderEmptySlots();
+}
+
+// ── MQTT connection ───────────────────────────────────────────────
 function toggleConnect() {
   if (connected) {
-    disconnect();
+    mqttDisconnect();
   } else {
-    connectDevice();
+    mqttConnect();
   }
 }
 
-async function connectDevice() {
-  setStatus('Connecting…', false);
+function mqttConnect() {
+  setStatus('Connecting…', 'warn');
   document.getElementById('btnConnect').disabled = true;
-  try {
-    const state = await fetchState();
-    if (state) {
-      connected = true;
-      setStatus('Connected to AranyaCtrl', true);
-      document.getElementById('btnConnect').textContent = 'Disconnect';
-      setControlsEnabled(true);
-      applyState(state);
-      pollTimer = setInterval(pollState, POLL_MS);
+
+  const clientId = 'AranyaWeb-' + Math.random().toString(16).substr(2, 8);
+  const url = `wss://${BROKER_HOST}:${BROKER_PORT}/mqtt`;
+
+  mqttClient = mqtt.connect(url, {
+    clientId:  clientId,
+    username:  BROKER_USER,
+    password:  BROKER_PASS,
+    clean:     true,
+    reconnectPeriod: 0,   // no auto-reconnect — user controls this
+    connectTimeout:  8000
+  });
+
+  mqttClient.on('connect', () => {
+    connected = true;
+    setStatus('Connected', 'on');
+    document.getElementById('btnConnect').textContent = 'Disconnect';
+    document.getElementById('btnConnect').disabled    = false;
+    setControlsEnabled(true);
+    mqttClient.subscribe(topicState, { qos: 0 });
+    // Request current state
+    publish({ cmd: 'get_state' });
+  });
+
+  mqttClient.on('message', (topic, payload) => {
+    if (topic === topicState) {
+      try {
+        const data = JSON.parse(payload.toString());
+        applyState(data);
+      } catch(e) { /* ignore */ }
     }
-  } catch(e) {
-    setStatus('Connection failed — check WiFi', false);
-  }
-  document.getElementById('btnConnect').disabled = false;
+  });
+
+  mqttClient.on('error', (err) => {
+    setStatus('Error: ' + err.message, 'off');
+    document.getElementById('btnConnect').disabled = false;
+    toast('Connection error');
+  });
+
+  mqttClient.on('close', () => {
+    if (connected) {
+      connected = false;
+      setStatus('Disconnected', 'off');
+      document.getElementById('btnConnect').textContent = 'Connect';
+      document.getElementById('btnConnect').disabled    = false;
+      setControlsEnabled(false);
+      resetDisplay();
+    }
+  });
 }
 
-function disconnect() {
+function mqttDisconnect() {
+  if (mqttClient) {
+    mqttClient.end(true);
+    mqttClient = null;
+  }
   connected = false;
-  clearInterval(pollTimer);
-  pollTimer = null;
-  setStatus('Disconnected', false);
+  setStatus('Disconnected', 'off');
   document.getElementById('btnConnect').textContent = 'Connect';
   setControlsEnabled(false);
   resetDisplay();
 }
 
-async function pollState() {
-  if (!connected) return;
-  try {
-    const state = await fetchState();
-    if (state) applyState(state);
-  } catch(e) {
-    // silently ignore poll failures
-  }
+function publish(payload) {
+  if (!mqttClient || !connected) { toast('Not connected'); return; }
+  mqttClient.publish(topicCmd, JSON.stringify(payload), { qos: 0, retain: false });
 }
 
-// ── HTTP helpers ──────────────────────────────────────────────────
-async function fetchState() {
-  const res = await fetch(`${DEVICE_URL}/state`, { signal: AbortSignal.timeout(5000) });
-  if (!res.ok) throw new Error('HTTP ' + res.status);
-  return res.json();
-}
-
-async function sendCmd(payload) {
-  if (!connected) return;
-  const res = await fetch(`${DEVICE_URL}/cmd`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-    signal: AbortSignal.timeout(5000)
-  });
-  if (!res.ok) throw new Error('HTTP ' + res.status);
-  const state = await res.json();
-  applyState(state);
-  return state;
-}
-
-// ── Apply state to UI ─────────────────────────────────────────────
+// ── Apply state ───────────────────────────────────────────────────
 function applyState(s) {
   lastState = s;
 
   // Clock
   if (s.time) {
-    const parts = s.time.split(' ');
-    const dateParts = parts[0].split('-');
-    document.getElementById('tvDate').textContent =
-      `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
-    const timeParts = parts[1].split(':');
-    let h = parseInt(timeParts[0]);
-    const m = timeParts[1];
+    const [datePart, timePart] = s.time.split(' ');
+    const [yr, mo, dy] = datePart.split('-');
+    document.getElementById('tvDate').textContent = `${dy}/${mo}/${yr}`;
+    const [hh, mm] = timePart.split(':');
+    let h = parseInt(hh);
     const ampm = h >= 12 ? 'PM' : 'AM';
     if (h === 0) h = 12; else if (h > 12) h -= 12;
     document.getElementById('tvTime').textContent =
-      `${String(h).padStart(2,'0')}:${m} ${ampm}`;
+      `${String(h).padStart(2,'0')}:${mm} ${ampm}`;
   }
 
-  // Outputs
   setOutput('tvLight', s.light);
   setOutput('tvPump',  s.pump);
+
   const waterOk = s.water === 'ok';
   const wEl = document.getElementById('tvWater');
   wEl.textContent = waterOk ? 'OK' : 'LOW';
-  wEl.className   = 'value' + (waterOk ? ' on' : '');
+  wEl.className   = 'ov' + (waterOk ? ' on' : '');
 
-  // Schedules
-  renderLightSlots(s.lightSchedules || []);
-  renderPumpSlots(s.pumpSchedules   || []);
+  if (s.lightSchedules) renderLightSlots(s.lightSchedules);
+  if (s.pumpSchedules)  renderPumpSlots(s.pumpSchedules);
 }
 
 function setOutput(id, state) {
   const el = document.getElementById(id);
   el.textContent = state ? 'ON' : 'OFF';
-  el.className   = 'value' + (state ? ' on' : '');
+  el.className   = 'ov' + (state ? ' on' : '');
 }
 
 // ── Schedule rendering ────────────────────────────────────────────
 function renderLightSlots(slots) {
-  const container = document.getElementById('lightSlots');
-  container.innerHTML = '';
+  const c = document.getElementById('lightSlots');
+  c.innerHTML = '';
   slots.forEach((s, i) => {
-    const onStr  = s.enabled ? `${pad(s.onH)}:${pad(s.onM)}`  : '--:--';
-    const offStr = s.enabled ? `${pad(s.offH)}:${pad(s.offM)}` : '--:--';
-    const valText = s.enabled ? `${onStr} – ${offStr}` : 'Not set';
-    container.innerHTML += `
+    const val = s.enabled
+      ? `${pad(s.onH)}:${pad(s.onM)} – ${pad(s.offH)}:${pad(s.offM)}`
+      : 'Not set';
+    c.innerHTML += `
       <div class="slot-row">
         <div class="slot-info">
-          <div class="slot-num">Slot ${i+1}</div>
-          <div class="slot-val">${valText}</div>
+          <div class="slot-num">SLOT ${i+1}</div>
+          <div class="slot-val">${val}</div>
         </div>
-        <button class="btn-yellow" onclick="openLightModal(${i})" ${connected?'':'disabled'}>Set</button>
-        <button class="btn-gray"   onclick="clearLightSlot(${i})" ${connected?'':'disabled'}>Clear</button>
+        <div class="slot-btns">
+          <button class="btn btn-yellow" onclick="openLightModal(${i})" ${connected?'':'disabled'}>Set</button>
+          <button class="btn btn-ghost"  onclick="clearLightSlot(${i})" ${connected?'':'disabled'}>Clear</button>
+        </div>
       </div>`;
   });
 }
 
 function renderPumpSlots(slots) {
-  const container = document.getElementById('pumpSlots');
-  container.innerHTML = '';
+  const c = document.getElementById('pumpSlots');
+  c.innerHTML = '';
   slots.forEach((s, i) => {
-    const onStr  = s.enabled ? `${pad(s.onH)}:${pad(s.onM)}` : '--:--';
-    const valText = s.enabled ? `${onStr}  (2 min run)` : 'Not set';
-    container.innerHTML += `
+    const val = s.enabled ? `${pad(s.onH)}:${pad(s.onM)}  (2 min run)` : 'Not set';
+    c.innerHTML += `
       <div class="slot-row">
         <div class="slot-info">
-          <div class="slot-num">Slot ${i+1}</div>
-          <div class="slot-val">${valText}</div>
+          <div class="slot-num">SLOT ${i+1}</div>
+          <div class="slot-val">${val}</div>
         </div>
-        <button class="btn-blue" onclick="openPumpModal(${i})" ${connected?'':'disabled'}>Set</button>
-        <button class="btn-gray" onclick="clearPumpSlot(${i})" ${connected?'':'disabled'}>Clear</button>
+        <div class="slot-btns">
+          <button class="btn btn-blue"  onclick="openPumpModal(${i})" ${connected?'':'disabled'}>Set</button>
+          <button class="btn btn-ghost" onclick="clearPumpSlot(${i})" ${connected?'':'disabled'}>Clear</button>
+        </div>
       </div>`;
   });
 }
 
+function renderEmptySlots() {
+  renderLightSlots([{},{},{},{}].slice(0,2).map(() => ({enabled:false})));
+  renderPumpSlots( [{},{},{},{}].map(() => ({enabled:false})));
+}
+
 // ── Commands ──────────────────────────────────────────────────────
-async function triggerLight() {
-  try {
-    await sendCmd({ cmd: 'light_trigger' });
-    toast('Light triggered');
-  } catch(e) { toast('Command failed'); }
-}
+function triggerLight() { publish({ cmd: 'light_trigger' }); toast('Light triggered'); }
+function triggerPump()  { publish({ cmd: 'pump_trigger'  }); toast('Pump triggered');  }
 
-async function triggerPump() {
-  try {
-    await sendCmd({ cmd: 'pump_trigger' });
-    toast('Pump triggered');
-  } catch(e) { toast('Command failed'); }
-}
-
-async function syncTime() {
+function syncTime() {
   const now = new Date();
-  try {
-    await sendCmd({
-      cmd:   'set_time',
-      year:  now.getFullYear(),
-      month: now.getMonth() + 1,
-      day:   now.getDate(),
-      hour:  now.getHours(),
-      min:   now.getMinutes(),
-      sec:   now.getSeconds()
-    });
-    toast('Time synced');
-  } catch(e) { toast('Sync failed'); }
+  publish({
+    cmd:   'set_time',
+    year:  now.getFullYear(),
+    month: now.getMonth() + 1,
+    day:   now.getDate(),
+    hour:  now.getHours(),
+    min:   now.getMinutes(),
+    sec:   now.getSeconds()
+  });
+  toast('Time synced');
 }
 
-async function clearAllSchedules() {
+function clearAllSchedules() {
   if (!confirm('Clear all schedules on device?')) return;
-  try {
-    await sendCmd({ cmd: 'clear_schedule' });
-    toast('All schedules cleared');
-  } catch(e) { toast('Command failed'); }
+  publish({ cmd: 'clear_schedule' });
+  toast('All schedules cleared');
 }
 
 // ── Light modal ───────────────────────────────────────────────────
@@ -494,47 +751,36 @@ function openLightModal(slot) {
   document.getElementById('lightModalTitle').textContent = `Light Schedule — Slot ${slot+1}`;
   const s = lastState?.lightSchedules?.[slot];
   if (s && s.enabled) {
-    document.getElementById('lightOnTime').value  = `${pad(s.onH)}:${pad(s.onM)}`;
-    document.getElementById('lightOffTime').value = `${pad(s.offH)}:${pad(s.offM)}`;
+    document.getElementById('lightOnTime').value   = `${pad(s.onH)}:${pad(s.onM)}`;
+    document.getElementById('lightOffTime').value  = `${pad(s.offH)}:${pad(s.offM)}`;
     document.getElementById('lightEnabled').checked = true;
   } else {
-    document.getElementById('lightOnTime').value  = '06:00';
-    document.getElementById('lightOffTime').value = '22:00';
+    document.getElementById('lightOnTime').value   = '06:00';
+    document.getElementById('lightOffTime').value  = '22:00';
     document.getElementById('lightEnabled').checked = false;
   }
   document.getElementById('lightModal').classList.add('show');
 }
+function closeLightModal() { document.getElementById('lightModal').classList.remove('show'); }
 
-function closeLightModal() {
-  document.getElementById('lightModal').classList.remove('show');
-}
-
-async function saveLightSchedule() {
+function saveLightSchedule() {
   const on  = document.getElementById('lightOnTime').value.split(':');
   const off = document.getElementById('lightOffTime').value.split(':');
   const en  = document.getElementById('lightEnabled').checked;
   closeLightModal();
-  try {
-    await sendCmd({
-      cmd:     'set_schedule',
-      type:    'light',
-      index:   editSlot,
-      onH:     parseInt(on[0]),
-      onM:     parseInt(on[1]),
-      offH:    parseInt(off[0]),
-      offM:    parseInt(off[1]),
-      enabled: en
-    });
-    toast(`Light slot ${editSlot+1} saved`);
-  } catch(e) { toast('Save failed'); }
+  publish({
+    cmd: 'set_schedule', type: 'light', index: editSlot,
+    onH: parseInt(on[0]), onM: parseInt(on[1]),
+    offH: parseInt(off[0]), offM: parseInt(off[1]),
+    enabled: en
+  });
+  toast(`Light slot ${editSlot+1} saved`);
 }
 
-async function clearLightSlot(slot) {
-  try {
-    await sendCmd({ cmd:'set_schedule', type:'light', index:slot,
-                    onH:0, onM:0, offH:0, offM:0, enabled:false });
-    toast(`Light slot ${slot+1} cleared`);
-  } catch(e) { toast('Command failed'); }
+function clearLightSlot(slot) {
+  publish({ cmd:'set_schedule', type:'light', index:slot,
+            onH:0, onM:0, offH:0, offM:0, enabled:false });
+  toast(`Light slot ${slot+1} cleared`);
 }
 
 // ── Pump modal ────────────────────────────────────────────────────
@@ -543,70 +789,66 @@ function openPumpModal(slot) {
   document.getElementById('pumpModalTitle').textContent = `Pump Schedule — Slot ${slot+1}`;
   const s = lastState?.pumpSchedules?.[slot];
   if (s && s.enabled) {
-    document.getElementById('pumpOnTime').value  = `${pad(s.onH)}:${pad(s.onM)}`;
+    document.getElementById('pumpOnTime').value    = `${pad(s.onH)}:${pad(s.onM)}`;
     document.getElementById('pumpEnabled').checked = true;
   } else {
-    document.getElementById('pumpOnTime').value  = '08:00';
+    document.getElementById('pumpOnTime').value    = '08:00';
     document.getElementById('pumpEnabled').checked = false;
   }
   document.getElementById('pumpModal').classList.add('show');
 }
+function closePumpModal() { document.getElementById('pumpModal').classList.remove('show'); }
 
-function closePumpModal() {
-  document.getElementById('pumpModal').classList.remove('show');
-}
-
-async function savePumpSchedule() {
+function savePumpSchedule() {
   const on = document.getElementById('pumpOnTime').value.split(':');
   const en = document.getElementById('pumpEnabled').checked;
   closePumpModal();
-  try {
-    await sendCmd({
-      cmd:     'set_schedule',
-      type:    'pump',
-      index:   editSlot,
-      onH:     parseInt(on[0]),
-      onM:     parseInt(on[1]),
-      enabled: en
-    });
-    toast(`Pump slot ${editSlot+1} saved`);
-  } catch(e) { toast('Save failed'); }
+  publish({
+    cmd: 'set_schedule', type: 'pump', index: editSlot,
+    onH: parseInt(on[0]), onM: parseInt(on[1]),
+    enabled: en
+  });
+  toast(`Pump slot ${editSlot+1} saved`);
 }
 
-async function clearPumpSlot(slot) {
-  try {
-    await sendCmd({ cmd:'set_schedule', type:'pump', index:slot,
-                    onH:0, onM:0, enabled:false });
-    toast(`Pump slot ${slot+1} cleared`);
-  } catch(e) { toast('Command failed'); }
+function clearPumpSlot(slot) {
+  publish({ cmd:'set_schedule', type:'pump', index:slot,
+            onH:0, onM:0, enabled:false });
+  toast(`Pump slot ${slot+1} cleared`);
 }
 
 // ── UI helpers ────────────────────────────────────────────────────
-function setStatus(msg, ok) {
-  document.getElementById('statusText').textContent = msg;
-  document.getElementById('statusText').className   = ok ? 'on' : '';
-  document.getElementById('statusDot').className    = 'dot' + (ok ? ' on' : '');
+function setStatus(msg, state) {
+  const dot  = document.getElementById('statusDot');
+  const text = document.getElementById('statusText');
+  text.textContent = msg;
+  text.className   = state === 'on' ? 'on' : state === 'warn' ? 'warn' : '';
+  dot.className    = 'indicator' + (state === 'on' ? ' on' : state === 'warn' ? ' warn' : '');
 }
 
 function setControlsEnabled(en) {
   ['btnLight','btnPump','btnSync','btnClearAll'].forEach(id => {
-    document.getElementById(id).disabled = !en;
+    const el = document.getElementById(id);
+    if (el) el.disabled = !en;
   });
+  // Re-render slots to update their buttons
+  if (lastState) {
+    if (lastState.lightSchedules) renderLightSlots(lastState.lightSchedules);
+    if (lastState.pumpSchedules)  renderPumpSlots(lastState.pumpSchedules);
+  }
 }
 
 function resetDisplay() {
-  document.getElementById('tvDate').textContent  = '--/--/----';
-  document.getElementById('tvTime').textContent  = '--:-- --';
+  document.getElementById('tvDate').textContent = '--/--/----';
+  document.getElementById('tvTime').textContent = '--:-- --';
   ['tvLight','tvPump','tvWater'].forEach(id => {
     const el = document.getElementById(id);
-    el.textContent = '---';
-    el.className   = 'value';
+    if (el) { el.textContent = '---'; el.className = 'ov'; }
   });
-  document.getElementById('lightSlots').innerHTML = '';
-  document.getElementById('pumpSlots').innerHTML  = '';
+  renderEmptySlots();
 }
 
-function pad(n) { return String(n).padStart(2,'0'); }
+function pad(n) { return String(n||0).padStart(2,'0'); }
 
 function toast(msg) {
   const el = document.getElementById('toast');
@@ -615,12 +857,11 @@ function toast(msg) {
   setTimeout(() => el.classList.remove('show'), 2500);
 }
 
-// Close modals on overlay click
-document.getElementById('lightModal').addEventListener('click', function(e) {
-  if (e.target === this) closeLightModal();
-});
-document.getElementById('pumpModal').addEventListener('click', function(e) {
-  if (e.target === this) closePumpModal();
+// Close modals on overlay tap
+['lightModal','pumpModal'].forEach(id => {
+  document.getElementById(id).addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('show');
+  });
 });
 </script>
 </body>
