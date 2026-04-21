@@ -360,11 +360,10 @@
   <div class="card">
     <div class="setup-title">First Time Setup</div>
     <div class="setup-desc">
-      Connect your phone to the <strong>same WiFi</strong> as the device, then tap below to discover it automatically.
-      After that, this page works from <strong>anywhere</strong> using mobile data.
+      Connect your phone to the <strong>same WiFi</strong> as the device, then tap below.
+      After this one-time setup, this page works from <strong>anywhere</strong> using mobile data.
     </div>
-    <button class="btn btn-cyan" onclick="discoverDevice()">Discover Device on Local WiFi</button>
-    <button class="btn btn-ghost" onclick="enterMacManually()" style="margin-top:4px">Enter MAC manually</button>
+    <button class="btn btn-cyan" id="btnDiscover" onclick="discoverDevice()">Discover Device on Local WiFi</button>
   </div>
 </div>
 
@@ -501,8 +500,10 @@ window.onload = function() {
 };
 
 // ── Setup screen ──────────────────────────────────────────────────
+const KNOWN_MAC = '2805A533283C'; // fallback if mDNS fails
+
 async function discoverDevice() {
-  const btn = document.querySelector('#setupScreen .btn-cyan');
+  const btn = document.getElementById('btnDiscover');
   btn.textContent = 'Discovering…';
   btn.disabled = true;
   try {
@@ -516,19 +517,10 @@ async function discoverDevice() {
     toast('Device found: ' + data.mac);
     showMainScreen();
   } catch(e) {
-    toast('Discovery failed — ensure same WiFi as device');
-    btn.textContent = 'Discover Device on Local WiFi';
-    btn.disabled = false;
-  }
-}
-
-function enterMacManually() {
-  const mac = prompt('Enter device MAC address (e.g. 2805A533283C):');
-  if (mac && mac.length === 12) {
-    saveMac(mac.toUpperCase());
+    // mDNS failed (common on Android/iOS) — use known MAC directly
+    saveMac(KNOWN_MAC);
+    toast('Using saved device MAC');
     showMainScreen();
-  } else if (mac) {
-    toast('Invalid MAC — must be 12 characters');
   }
 }
 
