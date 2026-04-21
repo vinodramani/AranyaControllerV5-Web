@@ -73,8 +73,7 @@
   }
 
   /* ── Setup screen ── */
-  #setupScreen { display: block; }
-  #mainScreen  { display: none; }
+  #mainScreen  { display: block; }
 
   .setup-title {
     font-family: var(--mono);
@@ -355,17 +354,7 @@
   <div class="header-sub">Remote Dashboard</div>
 </div>
 
-<!-- ── Setup screen (shown when no MAC saved) ── -->
-<div id="setupScreen">
-  <div class="card">
-    <div class="setup-title">First Time Setup</div>
-    <div class="setup-desc">
-      Connect your phone to the <strong>same WiFi</strong> as the device, then tap below.
-      After this one-time setup, this page works from <strong>anywhere</strong> using mobile data.
-    </div>
-    <button class="btn btn-cyan" id="btnDiscover" onclick="discoverDevice()">Discover Device on Local WiFi</button>
-  </div>
-</div>
+<!-- Setup screen removed — MAC is hardcoded, no local discovery needed -->
 
 <!-- ── Main dashboard (shown after MAC discovered) ── -->
 <div id="mainScreen">
@@ -494,9 +483,11 @@ let editSlot    = -1;
 // ── Init ──────────────────────────────────────────────────────────
 window.onload = function() {
   deviceMAC = localStorage.getItem('aranya_mac');
-  if (deviceMAC) {
-    showMainScreen();
+  if (!deviceMAC) {
+    // First visit — use hardcoded MAC directly, no setup screen needed
+    saveMac(KNOWN_MAC);
   }
+  showMainScreen();
 };
 
 // ── Setup screen ──────────────────────────────────────────────────
