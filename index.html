@@ -360,6 +360,7 @@ let connected   = false;
 let deviceMAC   = null;
 let topicCmd    = null;
 let topicState  = null;
+let topicStatus = null;
 let lastState   = null;
 let editSlot    = -1;
 let cameraStream= null;
@@ -393,8 +394,9 @@ function showSetupScreen() {
 }
 
 function showMainScreen() {
-  topicCmd   = `aranyasmart/${deviceMAC}/cmd`;
-  topicState = `aranyasmart/${deviceMAC}/state`;
+  topicCmd    = `aranyasmart/${deviceMAC}/cmd`;
+  topicState  = `aranyasmart/${deviceMAC}/state`;
+  topicStatus = `aranyasmart/${deviceMAC}/status`;
   document.getElementById('macDisplay').textContent    = deviceMAC;
   document.getElementById('setupScreen').style.display = 'none';
   document.getElementById('mainScreen').style.display  = 'block';
@@ -680,17 +682,28 @@ function mqttConnect() {
 
   mqttClient.on('connect', () => {
     connected = true;
-    setStatus('Connected', 'on');
+    setStatus('Broker connected — waiting for device…', 'warn');
     document.getElementById('btnConnect').textContent = 'Disconnect';
     document.getElementById('btnConnect').disabled    = false;
-    setControlsEnabled(true);
-    mqttClient.subscribe(topicState, { qos: 0 });
+    mqttClient.subscribe(topicState,  { qos: 0 });
+    mqttClient.subscribe(topicStatus, { qos: 1 });
+    // Request current state — if device is online it will respond
     publish({ cmd: 'get_state' });
   });
 
   mqttClient.on('message', (topic, payload) => {
-    if (topic === topicState) {
-      try { applyState(JSON.parse(payload.toString())); } catch(e) {}
+    const msg = payload.toString();
+    if (topic === topicStatus) {
+      if (msg === 'online') {
+        setStatus('Device Online', 'on');
+        setControlsEnabled(true);
+      } else {
+        setStatus('Device Offline', 'off');
+        setControlsEnabled(false);
+        resetDisplay();
+      }
+    } else if (topic === topicState) {
+      try { applyState(JSON.parse(msg)); } catch(e) {}
     }
   });
 
