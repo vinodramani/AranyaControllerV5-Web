@@ -7,344 +7,179 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg:         #0a0e12;
-    --surface:    #111820;
-    --surface2:   #1a2330;
-    --border:     #1e2d3d;
-    --text:       #e8f0f8;
-    --muted:      #5a7a96;
-    --green:      #00e676;
-    --green-dim:  #00c853;
-    --red:        #ff3d57;
-    --cyan:       #00e5ff;
-    --yellow:     #ffd740;
-    --blue:       #448aff;
-    --orange:     #ff6d00;
-    --mono:       'Space Mono', monospace;
-    --sans:       'DM Sans', sans-serif;
+    --bg:      #0a0e12;
+    --surface: #111820;
+    --surface2:#1a2330;
+    --border:  #1e2d3d;
+    --text:    #e8f0f8;
+    --muted:   #5a7a96;
+    --green:   #00e676;
+    --red:     #ff3d57;
+    --cyan:    #00e5ff;
+    --yellow:  #ffd740;
+    --blue:    #448aff;
+    --orange:  #ff6d00;
+    --mono:    'Space Mono', monospace;
+    --sans:    'DM Sans', sans-serif;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
   body {
     font-family: var(--sans);
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
     padding: 16px;
-    padding-bottom: 40px;
+    padding-bottom: 48px;
   }
 
   /* ── Header ── */
-  .header {
-    text-align: center;
-    margin-bottom: 20px;
-    padding-top: 12px;
-  }
-  .header-title {
-    font-family: var(--mono);
-    font-size: 18px;
-    color: var(--cyan);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
-  .header-sub {
-    font-size: 12px;
-    color: var(--muted);
-    margin-top: 3px;
-    letter-spacing: 1px;
-  }
+  .header { text-align: center; margin-bottom: 20px; padding-top: 12px; }
+  .header-title { font-family: var(--mono); font-size: 18px; color: var(--cyan); letter-spacing: 2px; text-transform: uppercase; }
+  .header-sub   { font-size: 12px; color: var(--muted); margin-top: 3px; letter-spacing: 1px; }
 
   /* ── Cards ── */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 14px;
-    margin-bottom: 12px;
-  }
-  .card-label {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    margin-bottom: 10px;
-  }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+  .card-label { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 10px; }
 
-  /* ── Setup screen ── */
-  #mainScreen  { display: block; }
+  /* ── Screens ── */
+  #setupScreen { display: none; }
+  #mainScreen  { display: none; }
 
-  .setup-title {
-    font-family: var(--mono);
-    font-size: 13px;
-    color: var(--yellow);
-    margin-bottom: 8px;
-    letter-spacing: 1px;
-  }
-  .setup-desc {
-    font-size: 13px;
-    color: var(--muted);
-    line-height: 1.6;
-    margin-bottom: 14px;
-  }
+  /* ── Setup ── */
+  .setup-title { font-family: var(--mono); font-size: 13px; color: var(--yellow); margin-bottom: 8px; letter-spacing: 1px; }
+  .setup-desc  { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 14px; }
   .setup-desc strong { color: var(--cyan); }
+  .setup-divider { text-align: center; font-size: 11px; color: var(--muted); margin: 8px 0; font-family: var(--mono); letter-spacing: 1px; }
+  .mac-input {
+    width: 100%; padding: 11px 12px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text);
+    font-family: var(--mono); font-size: 15px;
+    letter-spacing: 2px; text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .mac-input:focus { outline: none; border-color: var(--cyan); }
+  .mac-input::placeholder { color: var(--muted); letter-spacing: 1px; text-transform: none; }
 
-  /* ── Status row ── */
-  .status-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
-  }
-  .indicator {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--red);
-    flex-shrink: 0;
-    box-shadow: 0 0 6px var(--red);
-    transition: background 0.3s, box-shadow 0.3s;
-  }
-  .indicator.on {
-    background: var(--green);
-    box-shadow: 0 0 8px var(--green);
-  }
-  .indicator.warn {
-    background: var(--yellow);
-    box-shadow: 0 0 8px var(--yellow);
-  }
-  #statusText {
-    font-size: 13px;
-    color: var(--red);
-    font-family: var(--mono);
-    transition: color 0.3s;
-  }
+  /* ── Status ── */
+  .status-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .indicator { width: 8px; height: 8px; border-radius: 50%; background: var(--red); flex-shrink: 0; box-shadow: 0 0 6px var(--red); transition: background 0.3s, box-shadow 0.3s; }
+  .indicator.on   { background: var(--green);  box-shadow: 0 0 8px var(--green); }
+  .indicator.warn { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
+  #statusText { font-size: 13px; color: var(--red); font-family: var(--mono); transition: color 0.3s; }
   #statusText.on   { color: var(--green); }
   #statusText.warn { color: var(--yellow); }
 
   /* ── Clock ── */
-  #tvDate {
-    font-size: 14px;
-    color: var(--muted);
-    font-family: var(--mono);
-    margin-bottom: 2px;
-  }
-  #tvTime {
-    font-family: var(--mono);
-    font-size: 32px;
-    color: var(--cyan);
-    letter-spacing: 2px;
-    margin-bottom: 12px;
-  }
+  #tvDate { font-size: 14px; color: var(--muted); font-family: var(--mono); margin-bottom: 2px; }
+  #tvTime { font-family: var(--mono); font-size: 32px; color: var(--cyan); letter-spacing: 2px; margin-bottom: 12px; }
 
   /* ── Output grid ── */
-  .output-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-  }
-  .output-cell {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 6px;
-    text-align: center;
-  }
+  .output-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .output-cell { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 6px; text-align: center; }
   .output-cell .ol { font-size: 10px; color: var(--muted); letter-spacing: 1px; font-family: var(--mono); margin-bottom: 4px; }
-  .output-cell .ov {
-    font-family: var(--mono);
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--red);
-    transition: color 0.3s;
-  }
+  .output-cell .ov { font-family: var(--mono); font-size: 18px; font-weight: 700; color: var(--red); transition: color 0.3s; }
   .output-cell .ov.on { color: var(--green); }
 
   /* ── Buttons ── */
   .btn {
-    display: block;
-    width: 100%;
-    padding: 13px;
-    border: none;
-    border-radius: 8px;
-    font-family: var(--mono);
-    font-size: 12px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: opacity 0.2s, transform 0.1s;
+    display: block; width: 100%; padding: 13px;
+    border: none; border-radius: 8px;
+    font-family: var(--mono); font-size: 12px;
+    letter-spacing: 1px; text-transform: uppercase;
+    cursor: pointer; transition: opacity 0.2s, transform 0.1s;
     margin-bottom: 8px;
   }
+  .btn:last-child { margin-bottom: 0; }
   .btn:active { transform: scale(0.97); }
   .btn:disabled { opacity: 0.3; cursor: not-allowed; }
-  .btn:last-child { margin-bottom: 0; }
-
-  .btn-cyan   { background: var(--cyan);    color: #0a0e12; }
-  .btn-green  { background: var(--green);   color: #0a0e12; }
-  .btn-yellow { background: var(--yellow);  color: #0a0e12; }
-  .btn-blue   { background: var(--blue);    color: #fff; }
-  .btn-red    { background: var(--red);     color: #fff; }
-  .btn-ghost  {
-    background: transparent;
-    color: var(--muted);
-    border: 1px solid var(--border);
-  }
+  .btn-cyan   { background: var(--cyan);   color: #0a0e12; }
+  .btn-green  { background: var(--green);  color: #0a0e12; }
+  .btn-yellow { background: var(--yellow); color: #0a0e12; }
+  .btn-blue   { background: var(--blue);   color: #fff; }
+  .btn-red    { background: var(--red);    color: #fff; }
+  .btn-orange { background: var(--orange); color: #fff; }
+  .btn-ghost  { background: transparent; color: var(--muted); border: 1px solid var(--border); }
   .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
-
-  .btn-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
+  .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .btn-row .btn { margin-bottom: 0; }
 
   /* ── Schedule slots ── */
-  .sched-title {
-    font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-    margin-top: 4px;
-  }
+  .sched-title { font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; margin-top: 4px; }
   .sched-title.light { color: var(--yellow); }
   .sched-title.pump  { color: var(--blue); }
-
-  .slot-row {
-    display: flex;
-    align-items: center;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 12px;
-    margin-bottom: 6px;
-    gap: 10px;
-  }
+  .slot-row { display: flex; align-items: center; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 6px; gap: 10px; }
   .slot-info { flex: 1; min-width: 0; }
   .slot-num  { font-size: 11px; color: var(--muted); font-family: var(--mono); }
   .slot-val  { font-size: 13px; color: var(--text); font-family: var(--mono); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .slot-btns { display: flex; gap: 6px; flex-shrink: 0; }
-  .slot-btns .btn {
-    width: auto;
-    padding: 6px 12px;
-    font-size: 10px;
-    margin-bottom: 0;
-    border-radius: 6px;
-  }
+  .slot-btns .btn { width: auto; padding: 6px 12px; font-size: 10px; margin-bottom: 0; border-radius: 6px; }
 
-  /* ── Device info bar ── */
-  .device-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  /* ── Device bar ── */
+  .device-bar { display: flex; align-items: center; justify-content: space-between; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; margin-bottom: 12px; }
+  .device-mac { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .device-mac span { color: var(--cyan); }
+  .btn-forget { font-family: var(--mono); font-size: 10px; color: var(--red); background: none; border: none; cursor: pointer; letter-spacing: 0.5px; padding: 0; }
+
+  /* ── Share card ── */
+  .share-card {
     background: var(--surface2);
     border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 12px;
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
     margin-bottom: 12px;
   }
-  .device-mac {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--muted);
+  .share-card-title { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 14px; }
+  #qrCanvas { border-radius: 8px; margin-bottom: 12px; }
+  .share-url { font-family: var(--mono); font-size: 11px; color: var(--cyan); word-break: break-all; margin-bottom: 6px; }
+  .share-mac { font-family: var(--mono); font-size: 13px; color: var(--yellow); letter-spacing: 2px; margin-bottom: 14px; }
+  .share-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .share-btns .btn { margin-bottom: 0; font-size: 11px; padding: 10px; }
+
+  /* ── Camera view ── */
+  #cameraContainer {
+    position: relative;
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 8px;
+    display: none;
   }
-  .device-mac span { color: var(--cyan); }
-  .btn-forget {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--red);
-    background: none;
-    border: none;
-    cursor: pointer;
-    letter-spacing: 0.5px;
-    padding: 0;
+  #cameraVideo { width: 100%; display: block; }
+  #cameraScanLine {
+    position: absolute;
+    left: 10%; width: 80%; height: 2px;
+    background: var(--cyan);
+    box-shadow: 0 0 8px var(--cyan);
+    animation: scanLine 2s ease-in-out infinite;
   }
+  @keyframes scanLine {
+    0%, 100% { top: 20%; }
+    50%       { top: 80%; }
+  }
+  #cameraCanvas { display: none; }
 
   /* ── Modal ── */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.75);
-    z-index: 100;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
   .modal-overlay.show { display: flex; }
-  .modal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 20px;
-    width: 100%;
-    max-width: 340px;
-  }
-  .modal h3 {
-    font-family: var(--mono);
-    font-size: 13px;
-    color: var(--cyan);
-    letter-spacing: 1px;
-    margin-bottom: 16px;
-  }
-  .modal label {
-    font-size: 12px;
-    color: var(--muted);
-    font-family: var(--mono);
-    display: block;
-    margin-bottom: 4px;
-    margin-top: 12px;
-  }
-  .modal input[type=time] {
-    width: 100%;
-    padding: 10px 12px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 16px;
-  }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; width: 100%; max-width: 340px; }
+  .modal h3 { font-family: var(--mono); font-size: 13px; color: var(--cyan); letter-spacing: 1px; margin-bottom: 16px; }
+  .modal label { font-size: 12px; color: var(--muted); font-family: var(--mono); display: block; margin-bottom: 4px; margin-top: 12px; }
+  .modal input[type=time] { width: 100%; padding: 10px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: var(--mono); font-size: 16px; }
   .modal input[type=time]:focus { outline: none; border-color: var(--cyan); }
-  .check-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 14px;
-  }
+  .check-row { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
   .check-row input { width: 18px; height: 18px; cursor: pointer; accent-color: var(--cyan); }
   .check-row span { font-size: 13px; color: var(--text); }
   .modal-btns { display: flex; gap: 8px; margin-top: 16px; }
   .modal-btns .btn { flex: 1; margin-bottom: 0; }
 
   /* ── Toast ── */
-  #toast {
-    position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 10px 20px;
-    border-radius: 20px;
-    font-family: var(--mono);
-    font-size: 12px;
-    letter-spacing: 0.5px;
-    opacity: 0;
-    transition: opacity 0.3s;
-    pointer-events: none;
-    z-index: 200;
-    white-space: nowrap;
-  }
+  #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 10px 20px; border-radius: 20px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.5px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 200; white-space: nowrap; }
   #toast.show { opacity: 1; }
 
-  /* ── Pulse animation for connecting ── */
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50%       { opacity: 0.4; }
-  }
-  .pulsing { animation: pulse 1.2s ease-in-out infinite; }
+  /* hidden file input */
+  #qrFileInput { display: none; }
 </style>
 </head>
 <body>
@@ -354,12 +189,48 @@
   <div class="header-sub">Remote Dashboard</div>
 </div>
 
-<!-- Setup screen removed — MAC is hardcoded, no local discovery needed -->
+<!-- ── Setup Screen ── -->
+<div id="setupScreen">
+  <div class="card">
+    <div class="setup-title">Device Setup</div>
+    <div class="setup-desc">
+      Connect once to set up. After that this page works from <strong>anywhere</strong> using mobile data.
+    </div>
 
-<!-- ── Main dashboard (shown after MAC discovered) ── -->
+    <!-- Option 1: Local discovery -->
+    <button class="btn btn-cyan" id="btnDiscover" onclick="discoverDevice()">Discover Device on Local WiFi</button>
+
+    <div class="setup-divider">── or ──</div>
+
+    <!-- Option 2: Scan QR live -->
+    <button class="btn btn-blue" onclick="startCameraScan()">Scan QR Code with Camera</button>
+
+    <!-- Camera view -->
+    <div id="cameraContainer">
+      <video id="cameraVideo" autoplay playsinline muted></video>
+      <div id="cameraScanLine"></div>
+      <canvas id="cameraCanvas"></canvas>
+    </div>
+    <button class="btn btn-ghost" id="btnStopCamera" onclick="stopCamera()" style="display:none">Stop Camera</button>
+
+    <div class="setup-divider">── or ──</div>
+
+    <!-- Option 3: Upload QR image -->
+    <button class="btn btn-blue" onclick="document.getElementById('qrFileInput').click()">Upload QR Code Image</button>
+    <input type="file" id="qrFileInput" accept="image/*" onchange="readQrFromFile(event)">
+
+    <div class="setup-divider">── or ──</div>
+
+    <!-- Option 4: Manual MAC entry -->
+    <input type="text" class="mac-input" id="macInput" placeholder="Enter MAC  e.g. 2805A533283C" maxlength="17">
+    <button class="btn btn-green" onclick="saveMacManually()">Save MAC and Continue</button>
+  </div>
+</div>
+
+<!-- ── Main Dashboard ── -->
 <div id="mainScreen">
 
-  <!-- Device info bar -->
+  <!-- Device bar -->
   <div class="device-bar">
     <div class="device-mac">MAC: <span id="macDisplay">—</span></div>
     <button class="btn-forget" onclick="forgetDevice()">Forget Device</button>
@@ -386,18 +257,9 @@
   <div class="card">
     <div class="card-label">Output Status</div>
     <div class="output-grid">
-      <div class="output-cell">
-        <div class="ol">LIGHT</div>
-        <div class="ov" id="tvLight">---</div>
-      </div>
-      <div class="output-cell">
-        <div class="ol">PUMP</div>
-        <div class="ov" id="tvPump">---</div>
-      </div>
-      <div class="output-cell">
-        <div class="ol">WATER</div>
-        <div class="ov" id="tvWater">---</div>
-      </div>
+      <div class="output-cell"><div class="ol">LIGHT</div><div class="ov" id="tvLight">---</div></div>
+      <div class="output-cell"><div class="ol">PUMP</div> <div class="ov" id="tvPump">---</div></div>
+      <div class="output-cell"><div class="ol">WATER</div><div class="ov" id="tvWater">---</div></div>
     </div>
   </div>
 
@@ -418,6 +280,26 @@
     <div class="sched-title pump">Pump</div>
     <div id="pumpSlots"></div>
     <button class="btn btn-red" id="btnClearAll" onclick="clearAllSchedules()" disabled style="margin-top:10px">Clear All Schedules</button>
+  </div>
+
+  <!-- Share Device Access card -->
+  <div class="card">
+    <div class="card-label">Share Device Access</div>
+    <button class="btn btn-orange" onclick="generateShareCard()">Generate QR Code for Sharing</button>
+
+    <!-- Share card (hidden until generated) -->
+    <div id="shareCardContainer" style="display:none; margin-top:12px;">
+      <div class="share-card">
+        <div class="share-card-title">Scan or Share to Grant Access</div>
+        <canvas id="qrCanvas" width="200" height="200"></canvas>
+        <div class="share-url" id="shareUrl"></div>
+        <div class="share-mac" id="shareMac"></div>
+        <div class="share-btns">
+          <button class="btn btn-blue"  onclick="shareQrImage()">Share QR Image</button>
+          <button class="btn btn-green" onclick="shareLinkText()">Share Link + MAC</button>
+        </div>
+      </div>
+    </div>
   </div>
 
 </div><!-- end mainScreen -->
@@ -460,16 +342,19 @@
 
 <div id="toast"></div>
 
-<!-- MQTT.js via CDN -->
+<!-- Libraries -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/5.3.4/mqtt.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
 
 <script>
-// ── EMQX broker config ────────────────────────────────────────────
-const BROKER_HOST = 'o2f8f1bb.ala.asia-southeast1.emqxsl.com';
-const BROKER_PORT = 8084;        // WSS port on EMQX serverless
-const BROKER_USER = 'AranyaAdmin';
-const BROKER_PASS = '123Smart@';
-const LOCAL_URL   = 'http://aranya-ctrl.local';
+// ── Config ────────────────────────────────────────────────────────
+const BROKER_HOST  = 'o2f8f1bb.ala.asia-southeast1.emqxsl.com';
+const BROKER_PORT  = 8084;
+const BROKER_USER  = 'AranyaAdmin';
+const BROKER_PASS  = '123Smart@';
+const LOCAL_URL    = 'http://aranya-ctrl.local';
+const PAGES_URL    = 'https://vinodramani.github.io/AranyaControllerV5-Web/';
 
 // ── State ─────────────────────────────────────────────────────────
 let mqttClient  = null;
@@ -479,20 +364,46 @@ let topicCmd    = null;
 let topicState  = null;
 let lastState   = null;
 let editSlot    = -1;
+let cameraStream= null;
+let scanInterval= null;
 
 // ── Init ──────────────────────────────────────────────────────────
 window.onload = function() {
-  deviceMAC = localStorage.getItem('aranya_mac');
-  if (!deviceMAC) {
-    // First visit — use hardcoded MAC directly, no setup screen needed
-    saveMac(KNOWN_MAC);
+  // Check if MAC came in via URL parameter (from QR code scan)
+  const urlParams = new URLSearchParams(window.location.search);
+  const macFromUrl = urlParams.get('mac');
+  if (macFromUrl && macFromUrl.length === 12) {
+    saveMac(macFromUrl);
+    toast('Device MAC loaded from QR code');
+    showMainScreen();
+    return;
   }
-  showMainScreen();
+
+  // Check localStorage
+  deviceMAC = localStorage.getItem('aranya_mac');
+  if (deviceMAC) {
+    showMainScreen();
+  } else {
+    showSetupScreen();
+  }
 };
 
-// ── Setup screen ──────────────────────────────────────────────────
-const KNOWN_MAC = '2805A533283C'; // fallback if mDNS fails
+// ── Screen switching ──────────────────────────────────────────────
+function showSetupScreen() {
+  document.getElementById('setupScreen').style.display = 'block';
+  document.getElementById('mainScreen').style.display  = 'none';
+}
 
+function showMainScreen() {
+  topicCmd   = `aranyasmart/${deviceMAC}/cmd`;
+  topicState = `aranyasmart/${deviceMAC}/state`;
+  document.getElementById('macDisplay').textContent    = deviceMAC;
+  document.getElementById('setupScreen').style.display = 'none';
+  document.getElementById('mainScreen').style.display  = 'block';
+  renderEmptySlots();
+}
+
+// ── Local discovery ───────────────────────────────────────────────
 async function discoverDevice() {
   const btn = document.getElementById('btnDiscover');
   btn.textContent = 'Discovering…';
@@ -508,48 +419,239 @@ async function discoverDevice() {
     toast('Device found: ' + data.mac);
     showMainScreen();
   } catch(e) {
-    // mDNS failed (common on Android/iOS) — use known MAC directly
-    saveMac(KNOWN_MAC);
-    toast('Using saved device MAC');
-    showMainScreen();
+    toast('Not found — try another method below');
+    btn.textContent = 'Discover Device on Local WiFi';
+    btn.disabled = false;
   }
 }
 
-function saveMac(mac) {
-  deviceMAC  = mac.replace(/:/g, '').toUpperCase();
-  topicCmd   = `aranyasmart/${deviceMAC}/cmd`;
-  topicState = `aranyasmart/${deviceMAC}/state`;
-  localStorage.setItem('aranya_mac', deviceMAC);
-  document.getElementById('macDisplay').textContent = deviceMAC;
+// ── Manual MAC entry ──────────────────────────────────────────────
+function saveMacManually() {
+  const raw = document.getElementById('macInput').value.replace(/[^a-fA-F0-9]/g, '');
+  if (raw.length !== 12) {
+    toast('MAC must be 12 hex characters');
+    return;
+  }
+  saveMac(raw.toUpperCase());
+  toast('MAC saved');
+  showMainScreen();
 }
 
+// ── Camera QR scan ────────────────────────────────────────────────
+async function startCameraScan() {
+  const container = document.getElementById('cameraContainer');
+  const video     = document.getElementById('cameraVideo');
+  const stopBtn   = document.getElementById('btnStopCamera');
+
+  try {
+    cameraStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment' }
+    });
+    video.srcObject = cameraStream;
+    container.style.display = 'block';
+    stopBtn.style.display   = 'block';
+
+    scanInterval = setInterval(() => {
+      const canvas = document.getElementById('cameraCanvas');
+      const ctx    = canvas.getContext('2d');
+      canvas.width  = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(imageData.data, imageData.width, imageData.height);
+      if (code) {
+        stopCamera();
+        processQrData(code.data);
+      }
+    }, 300);
+  } catch(e) {
+    toast('Camera access denied');
+  }
+}
+
+function stopCamera() {
+  clearInterval(scanInterval);
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(t => t.stop());
+    cameraStream = null;
+  }
+  document.getElementById('cameraContainer').style.display = 'none';
+  document.getElementById('btnStopCamera').style.display   = 'none';
+}
+
+// ── Upload QR image ───────────────────────────────────────────────
+function readQrFromFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      canvas.width  = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(imageData.data, imageData.width, imageData.height);
+      if (code) {
+        processQrData(code.data);
+      } else {
+        toast('No QR code found in image');
+      }
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+  // Reset input so same file can be selected again
+  event.target.value = '';
+}
+
+// ── Process QR data ───────────────────────────────────────────────
+function processQrData(data) {
+  // QR contains full URL with mac parameter
+  try {
+    const url    = new URL(data);
+    const mac    = url.searchParams.get('mac');
+    if (mac && mac.length === 12) {
+      saveMac(mac.toUpperCase());
+      toast('QR scanned — MAC saved');
+      showMainScreen();
+      return;
+    }
+  } catch(e) { /* not a URL */ }
+
+  // Maybe QR contains just the MAC
+  const raw = data.replace(/[^a-fA-F0-9]/g, '');
+  if (raw.length === 12) {
+    saveMac(raw.toUpperCase());
+    toast('QR scanned — MAC saved');
+    showMainScreen();
+    return;
+  }
+
+  toast('QR code not recognised');
+}
+
+// ── Save MAC ──────────────────────────────────────────────────────
+function saveMac(mac) {
+  deviceMAC  = mac.replace(/[^a-fA-F0-9]/gi, '').toUpperCase();
+  localStorage.setItem('aranya_mac', deviceMAC);
+}
+
+// ── Forget device ─────────────────────────────────────────────────
 function forgetDevice() {
-  if (!confirm('Forget this device? You will need to rediscover it.')) return;
+  if (!confirm('Forget this device? You will need to set it up again.')) return;
   localStorage.removeItem('aranya_mac');
   if (mqttClient) mqttClient.end(true);
   mqttClient = null;
   connected  = false;
   deviceMAC  = null;
-  document.getElementById('setupScreen').style.display = 'block';
-  document.getElementById('mainScreen').style.display  = 'none';
+  document.getElementById('shareCardContainer').style.display = 'none';
+  showSetupScreen();
 }
 
-function showMainScreen() {
-  topicCmd   = `aranyasmart/${deviceMAC}/cmd`;
-  topicState = `aranyasmart/${deviceMAC}/state`;
-  document.getElementById('macDisplay').textContent    = deviceMAC;
-  document.getElementById('setupScreen').style.display = 'none';
-  document.getElementById('mainScreen').style.display  = 'block';
-  renderEmptySlots();
+// ── Generate share card ───────────────────────────────────────────
+function generateShareCard() {
+  if (!deviceMAC) { toast('No device MAC saved'); return; }
+
+  const shareLink = `${PAGES_URL}?mac=${deviceMAC}`;
+
+  // Generate QR code onto canvas
+  const canvas = document.getElementById('qrCanvas');
+  const ctx    = canvas.getContext('2d');
+  ctx.clearRect(0, 0, 200, 200);
+
+  // Use QRCode library to draw onto a temp div then copy to canvas
+  const tempDiv = document.createElement('div');
+  new QRCode(tempDiv, {
+    text:         shareLink,
+    width:        200,
+    height:       200,
+    colorDark:    '#000000',
+    colorLight:   '#ffffff',
+    correctLevel: QRCode.CorrectLevel.M
+  });
+
+  // Wait for QR image to render then draw onto canvas
+  setTimeout(() => {
+    const qrImg = tempDiv.querySelector('img') || tempDiv.querySelector('canvas');
+    if (qrImg) {
+      if (qrImg.tagName === 'CANVAS') {
+        ctx.drawImage(qrImg, 0, 0, 200, 200);
+      } else {
+        const img = new Image();
+        img.onload = () => ctx.drawImage(img, 0, 0, 200, 200);
+        img.src = qrImg.src;
+      }
+    }
+  }, 100);
+
+  // Update share card text
+  document.getElementById('shareUrl').textContent = shareLink;
+  document.getElementById('shareMac').textContent = 'MAC: ' + deviceMAC;
+  document.getElementById('shareCardContainer').style.display = 'block';
+
+  // Scroll to share card
+  document.getElementById('shareCardContainer').scrollIntoView({ behavior: 'smooth' });
 }
 
-// ── MQTT connection ───────────────────────────────────────────────
-function toggleConnect() {
-  if (connected) {
-    mqttDisconnect();
+// ── Share QR image ────────────────────────────────────────────────
+async function shareQrImage() {
+  const canvas = document.getElementById('qrCanvas');
+  const shareLink = `${PAGES_URL}?mac=${deviceMAC}`;
+
+  // Convert canvas to blob
+  canvas.toBlob(async (blob) => {
+    const file = new File([blob], 'AranyaController-QR.png', { type: 'image/png' });
+    const shareText = `AranyaController V5 Access\nLink: ${shareLink}\nMAC: ${deviceMAC}`;
+
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({
+          title: 'AranyaController V5 Access',
+          text:  shareText,
+          files: [file]
+        });
+      } catch(e) {
+        if (e.name !== 'AbortError') toast('Share cancelled');
+      }
+    } else if (navigator.share) {
+      // Share without file (fallback)
+      try {
+        await navigator.share({ title: 'AranyaController V5', text: shareText });
+      } catch(e) {
+        if (e.name !== 'AbortError') toast('Share not supported — screenshot the QR');
+      }
+    } else {
+      toast('Screenshot the QR code to share');
+    }
+  }, 'image/png');
+}
+
+// ── Share link + MAC as text ──────────────────────────────────────
+async function shareLinkText() {
+  const shareLink = `${PAGES_URL}?mac=${deviceMAC}`;
+  const text = `AranyaController V5 — Device Access\n\nOpen this link:\n${shareLink}\n\nDevice MAC: ${deviceMAC}\n\nOpen the link, tap Connect, and you're in.`;
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: 'AranyaController V5 Access', text: text });
+    } catch(e) {
+      if (e.name !== 'AbortError') copyToClipboard(shareLink);
+    }
   } else {
-    mqttConnect();
+    copyToClipboard(shareLink);
   }
+}
+
+function copyToClipboard(text) {
+  navigator.clipboard?.writeText(text).then(() => toast('Link copied to clipboard'));
+}
+
+// ── MQTT ──────────────────────────────────────────────────────────
+function toggleConnect() {
+  connected ? mqttDisconnect() : mqttConnect();
 }
 
 function mqttConnect() {
@@ -557,15 +659,9 @@ function mqttConnect() {
   document.getElementById('btnConnect').disabled = true;
 
   const clientId = 'AranyaWeb-' + Math.random().toString(16).substr(2, 8);
-  const url = `wss://${BROKER_HOST}:${BROKER_PORT}/mqtt`;
-
-  mqttClient = mqtt.connect(url, {
-    clientId:  clientId,
-    username:  BROKER_USER,
-    password:  BROKER_PASS,
-    clean:     true,
-    reconnectPeriod: 0,   // no auto-reconnect — user controls this
-    connectTimeout:  8000
+  mqttClient = mqtt.connect(`wss://${BROKER_HOST}:${BROKER_PORT}/mqtt`, {
+    clientId, username: BROKER_USER, password: BROKER_PASS,
+    clean: true, reconnectPeriod: 0, connectTimeout: 8000
   });
 
   mqttClient.on('connect', () => {
@@ -575,23 +671,18 @@ function mqttConnect() {
     document.getElementById('btnConnect').disabled    = false;
     setControlsEnabled(true);
     mqttClient.subscribe(topicState, { qos: 0 });
-    // Request current state
     publish({ cmd: 'get_state' });
   });
 
   mqttClient.on('message', (topic, payload) => {
     if (topic === topicState) {
-      try {
-        const data = JSON.parse(payload.toString());
-        applyState(data);
-      } catch(e) { /* ignore */ }
+      try { applyState(JSON.parse(payload.toString())); } catch(e) {}
     }
   });
 
-  mqttClient.on('error', (err) => {
-    setStatus('Error: ' + err.message, 'off');
+  mqttClient.on('error', () => {
+    setStatus('Connection error', 'off');
     document.getElementById('btnConnect').disabled = false;
-    toast('Connection error');
   });
 
   mqttClient.on('close', () => {
@@ -607,10 +698,7 @@ function mqttConnect() {
 }
 
 function mqttDisconnect() {
-  if (mqttClient) {
-    mqttClient.end(true);
-    mqttClient = null;
-  }
+  if (mqttClient) { mqttClient.end(true); mqttClient = null; }
   connected = false;
   setStatus('Disconnected', 'off');
   document.getElementById('btnConnect').textContent = 'Connect';
@@ -626,8 +714,6 @@ function publish(payload) {
 // ── Apply state ───────────────────────────────────────────────────
 function applyState(s) {
   lastState = s;
-
-  // Clock
   if (s.time) {
     const [datePart, timePart] = s.time.split(' ');
     const [yr, mo, dy] = datePart.split('-');
@@ -636,18 +722,14 @@ function applyState(s) {
     let h = parseInt(hh);
     const ampm = h >= 12 ? 'PM' : 'AM';
     if (h === 0) h = 12; else if (h > 12) h -= 12;
-    document.getElementById('tvTime').textContent =
-      `${String(h).padStart(2,'0')}:${mm} ${ampm}`;
+    document.getElementById('tvTime').textContent = `${String(h).padStart(2,'0')}:${mm} ${ampm}`;
   }
-
   setOutput('tvLight', s.light);
   setOutput('tvPump',  s.pump);
-
   const waterOk = s.water === 'ok';
   const wEl = document.getElementById('tvWater');
   wEl.textContent = waterOk ? 'OK' : 'LOW';
   wEl.className   = 'ov' + (waterOk ? ' on' : '');
-
   if (s.lightSchedules) renderLightSlots(s.lightSchedules);
   if (s.pumpSchedules)  renderPumpSlots(s.pumpSchedules);
 }
@@ -663,20 +745,8 @@ function renderLightSlots(slots) {
   const c = document.getElementById('lightSlots');
   c.innerHTML = '';
   slots.forEach((s, i) => {
-    const val = s.enabled
-      ? `${pad(s.onH)}:${pad(s.onM)} – ${pad(s.offH)}:${pad(s.offM)}`
-      : 'Not set';
-    c.innerHTML += `
-      <div class="slot-row">
-        <div class="slot-info">
-          <div class="slot-num">SLOT ${i+1}</div>
-          <div class="slot-val">${val}</div>
-        </div>
-        <div class="slot-btns">
-          <button class="btn btn-yellow" onclick="openLightModal(${i})" ${connected?'':'disabled'}>Set</button>
-          <button class="btn btn-ghost"  onclick="clearLightSlot(${i})" ${connected?'':'disabled'}>Clear</button>
-        </div>
-      </div>`;
+    const val = s.enabled ? `${pad(s.onH)}:${pad(s.onM)} – ${pad(s.offH)}:${pad(s.offM)}` : 'Not set';
+    c.innerHTML += `<div class="slot-row"><div class="slot-info"><div class="slot-num">SLOT ${i+1}</div><div class="slot-val">${val}</div></div><div class="slot-btns"><button class="btn btn-yellow" onclick="openLightModal(${i})" ${connected?'':'disabled'}>Set</button><button class="btn btn-ghost" onclick="clearLightSlot(${i})" ${connected?'':'disabled'}>Clear</button></div></div>`;
   });
 }
 
@@ -685,46 +755,28 @@ function renderPumpSlots(slots) {
   c.innerHTML = '';
   slots.forEach((s, i) => {
     const val = s.enabled ? `${pad(s.onH)}:${pad(s.onM)}  (2 min run)` : 'Not set';
-    c.innerHTML += `
-      <div class="slot-row">
-        <div class="slot-info">
-          <div class="slot-num">SLOT ${i+1}</div>
-          <div class="slot-val">${val}</div>
-        </div>
-        <div class="slot-btns">
-          <button class="btn btn-blue"  onclick="openPumpModal(${i})" ${connected?'':'disabled'}>Set</button>
-          <button class="btn btn-ghost" onclick="clearPumpSlot(${i})" ${connected?'':'disabled'}>Clear</button>
-        </div>
-      </div>`;
+    c.innerHTML += `<div class="slot-row"><div class="slot-info"><div class="slot-num">SLOT ${i+1}</div><div class="slot-val">${val}</div></div><div class="slot-btns"><button class="btn btn-blue" onclick="openPumpModal(${i})" ${connected?'':'disabled'}>Set</button><button class="btn btn-ghost" onclick="clearPumpSlot(${i})" ${connected?'':'disabled'}>Clear</button></div></div>`;
   });
 }
 
 function renderEmptySlots() {
-  renderLightSlots([{},{},{},{}].slice(0,2).map(() => ({enabled:false})));
-  renderPumpSlots( [{},{},{},{}].map(() => ({enabled:false})));
+  renderLightSlots([{enabled:false},{enabled:false}]);
+  renderPumpSlots([{enabled:false},{enabled:false},{enabled:false},{enabled:false}]);
 }
 
 // ── Commands ──────────────────────────────────────────────────────
-function triggerLight() { publish({ cmd: 'light_trigger' }); toast('Light triggered'); }
-function triggerPump()  { publish({ cmd: 'pump_trigger'  }); toast('Pump triggered');  }
+function triggerLight() { publish({ cmd:'light_trigger' }); toast('Light triggered'); }
+function triggerPump()  { publish({ cmd:'pump_trigger'  }); toast('Pump triggered');  }
 
 function syncTime() {
-  const now = new Date();
-  publish({
-    cmd:   'set_time',
-    year:  now.getFullYear(),
-    month: now.getMonth() + 1,
-    day:   now.getDate(),
-    hour:  now.getHours(),
-    min:   now.getMinutes(),
-    sec:   now.getSeconds()
-  });
+  const n = new Date();
+  publish({ cmd:'set_time', year:n.getFullYear(), month:n.getMonth()+1, day:n.getDate(), hour:n.getHours(), min:n.getMinutes(), sec:n.getSeconds() });
   toast('Time synced');
 }
 
 function clearAllSchedules() {
   if (!confirm('Clear all schedules on device?')) return;
-  publish({ cmd: 'clear_schedule' });
+  publish({ cmd:'clear_schedule' });
   toast('All schedules cleared');
 }
 
@@ -733,36 +785,22 @@ function openLightModal(slot) {
   editSlot = slot;
   document.getElementById('lightModalTitle').textContent = `Light Schedule — Slot ${slot+1}`;
   const s = lastState?.lightSchedules?.[slot];
-  if (s && s.enabled) {
-    document.getElementById('lightOnTime').value   = `${pad(s.onH)}:${pad(s.onM)}`;
-    document.getElementById('lightOffTime').value  = `${pad(s.offH)}:${pad(s.offM)}`;
-    document.getElementById('lightEnabled').checked = true;
-  } else {
-    document.getElementById('lightOnTime').value   = '06:00';
-    document.getElementById('lightOffTime').value  = '22:00';
-    document.getElementById('lightEnabled').checked = false;
-  }
+  document.getElementById('lightOnTime').value    = s?.enabled ? `${pad(s.onH)}:${pad(s.onM)}`   : '06:00';
+  document.getElementById('lightOffTime').value   = s?.enabled ? `${pad(s.offH)}:${pad(s.offM)}` : '22:00';
+  document.getElementById('lightEnabled').checked = s?.enabled || false;
   document.getElementById('lightModal').classList.add('show');
 }
 function closeLightModal() { document.getElementById('lightModal').classList.remove('show'); }
-
 function saveLightSchedule() {
   const on  = document.getElementById('lightOnTime').value.split(':');
   const off = document.getElementById('lightOffTime').value.split(':');
   const en  = document.getElementById('lightEnabled').checked;
   closeLightModal();
-  publish({
-    cmd: 'set_schedule', type: 'light', index: editSlot,
-    onH: parseInt(on[0]), onM: parseInt(on[1]),
-    offH: parseInt(off[0]), offM: parseInt(off[1]),
-    enabled: en
-  });
+  publish({ cmd:'set_schedule', type:'light', index:editSlot, onH:+on[0], onM:+on[1], offH:+off[0], offM:+off[1], enabled:en });
   toast(`Light slot ${editSlot+1} saved`);
 }
-
 function clearLightSlot(slot) {
-  publish({ cmd:'set_schedule', type:'light', index:slot,
-            onH:0, onM:0, offH:0, offM:0, enabled:false });
+  publish({ cmd:'set_schedule', type:'light', index:slot, onH:0, onM:0, offH:0, offM:0, enabled:false });
   toast(`Light slot ${slot+1} cleared`);
 }
 
@@ -771,42 +809,28 @@ function openPumpModal(slot) {
   editSlot = slot;
   document.getElementById('pumpModalTitle').textContent = `Pump Schedule — Slot ${slot+1}`;
   const s = lastState?.pumpSchedules?.[slot];
-  if (s && s.enabled) {
-    document.getElementById('pumpOnTime').value    = `${pad(s.onH)}:${pad(s.onM)}`;
-    document.getElementById('pumpEnabled').checked = true;
-  } else {
-    document.getElementById('pumpOnTime').value    = '08:00';
-    document.getElementById('pumpEnabled').checked = false;
-  }
+  document.getElementById('pumpOnTime').value    = s?.enabled ? `${pad(s.onH)}:${pad(s.onM)}` : '08:00';
+  document.getElementById('pumpEnabled').checked = s?.enabled || false;
   document.getElementById('pumpModal').classList.add('show');
 }
 function closePumpModal() { document.getElementById('pumpModal').classList.remove('show'); }
-
 function savePumpSchedule() {
   const on = document.getElementById('pumpOnTime').value.split(':');
   const en = document.getElementById('pumpEnabled').checked;
   closePumpModal();
-  publish({
-    cmd: 'set_schedule', type: 'pump', index: editSlot,
-    onH: parseInt(on[0]), onM: parseInt(on[1]),
-    enabled: en
-  });
+  publish({ cmd:'set_schedule', type:'pump', index:editSlot, onH:+on[0], onM:+on[1], enabled:en });
   toast(`Pump slot ${editSlot+1} saved`);
 }
-
 function clearPumpSlot(slot) {
-  publish({ cmd:'set_schedule', type:'pump', index:slot,
-            onH:0, onM:0, enabled:false });
+  publish({ cmd:'set_schedule', type:'pump', index:slot, onH:0, onM:0, enabled:false });
   toast(`Pump slot ${slot+1} cleared`);
 }
 
 // ── UI helpers ────────────────────────────────────────────────────
 function setStatus(msg, state) {
-  const dot  = document.getElementById('statusDot');
-  const text = document.getElementById('statusText');
-  text.textContent = msg;
-  text.className   = state === 'on' ? 'on' : state === 'warn' ? 'warn' : '';
-  dot.className    = 'indicator' + (state === 'on' ? ' on' : state === 'warn' ? ' warn' : '');
+  document.getElementById('statusText').textContent = msg;
+  document.getElementById('statusText').className   = state === 'on' ? 'on' : state === 'warn' ? 'warn' : '';
+  document.getElementById('statusDot').className    = 'indicator' + (state === 'on' ? ' on' : state === 'warn' ? ' warn' : '');
 }
 
 function setControlsEnabled(en) {
@@ -814,7 +838,6 @@ function setControlsEnabled(en) {
     const el = document.getElementById(id);
     if (el) el.disabled = !en;
   });
-  // Re-render slots to update their buttons
   if (lastState) {
     if (lastState.lightSchedules) renderLightSlots(lastState.lightSchedules);
     if (lastState.pumpSchedules)  renderPumpSlots(lastState.pumpSchedules);
