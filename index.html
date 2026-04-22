@@ -131,7 +131,7 @@
     margin-bottom: 12px;
   }
   .share-card-title { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 14px; }
-  #qrCodeDiv { border-radius: 8px; margin-bottom: 12px; }
+  #qrCanvas { border-radius: 4px; margin-bottom: 12px; }
   .share-url { font-family: var(--mono); font-size: 11px; color: var(--cyan); word-break: break-all; margin-bottom: 6px; }
   .share-mac { font-family: var(--mono); font-size: 13px; color: var(--yellow); letter-spacing: 2px; margin-bottom: 14px; }
   .share-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -291,7 +291,7 @@
     <div id="shareCardContainer" style="display:none; margin-top:12px;">
       <div class="share-card">
         <div class="share-card-title">Scan or Share to Grant Access</div>
-        <div id="qrCodeDiv" style="display:inline-block;background:#fff;padding:8px;border-radius:8px;"></div>
+        <canvas id="qrCanvas" width="220" height="220" style="border-radius:8px;background:#fff;padding:8px;display:block;margin:0 auto 12px;"></canvas>
         <div class="share-url" id="shareUrl"></div>
         <div class="share-mac" id="shareMac"></div>
         <div class="share-btns">
@@ -556,13 +556,13 @@ function generateShareCard() {
   if (!deviceMAC) { toast('No device MAC saved'); return; }
 
   const shareLink = `${PAGES_URL}?mac=${deviceMAC}`;
-  const qrDiv = document.getElementById('qrCodeDiv');
 
-  // Clear previous QR
-  qrDiv.innerHTML = '';
+  // Draw QR directly onto named canvas — no img element involved
+  // Use a temp div, get the canvas QRCode.js renders, copy to our named canvas
+  const tempDiv = document.createElement('div');
+  document.body.appendChild(tempDiv);
 
-  // QRCode.js renders an <img> directly into the div — most reliable method
-  new QRCode(qrDiv, {
+  new QRCode(tempDiv, {
     text:         shareLink,
     width:        200,
     height:       200,
@@ -571,15 +571,41 @@ function generateShareCard() {
     correctLevel: QRCode.CorrectLevel.M
   });
 
-  // Update share card text
-  document.getElementById('shareUrl').textContent = shareLink;
-  document.getElementById('shareMac').textContent = 'MAC: ' + deviceMAC;
-  document.getElementById('shareCardContainer').style.display = 'block';
-
-  // Scroll to share card
+  // QRCode.js renders a canvas inside tempDiv when running on canvas-capable browsers
   setTimeout(() => {
-    document.getElementById('shareCardContainer').scrollIntoView({ behavior: 'smooth' });
-  }, 150);
+    const srcCanvas = tempDiv.querySelector('canvas');
+    const srcImg    = tempDiv.querySelector('img');
+    const destCanvas = document.getElementById('qrCanvas');
+    const ctx = destCanvas.getContext('2d');
+
+    // White background
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, 220, 220);
+
+    if (srcCanvas) {
+      // Draw canvas to canvas — most reliable, no image loading
+      ctx.drawImage(srcCanvas, 10, 10, 200, 200);
+      document.body.removeChild(tempDiv);
+    } else if (srcImg) {
+      // Fallback: img element
+      if (srcImg.complete) {
+        ctx.drawImage(srcImg, 10, 10, 200, 200);
+        document.body.removeChild(tempDiv);
+      } else {
+        srcImg.onload = () => {
+          ctx.drawImage(srcImg, 10, 10, 200, 200);
+          document.body.removeChild(tempDiv);
+        };
+      }
+    }
+
+    document.getElementById('shareUrl').textContent = shareLink;
+    document.getElementById('shareMac').textContent = 'MAC: ' + deviceMAC;
+    document.getElementById('shareCardContainer').style.display = 'block';
+    setTimeout(() => {
+      document.getElementById('shareCardContainer').scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  }, 100);
 }
 
 // ── Share QR image ────────────────────────────────────────────────
@@ -587,25 +613,9 @@ async function shareQrImage() {
   const shareLink = `${PAGES_URL}?mac=${deviceMAC}`;
   const shareText = `AranyaController V5 Access\nLink: ${shareLink}\nMAC: ${deviceMAC}`;
 
-  const qrImg = document.querySelector('#qrCodeDiv img');
-  if (!qrImg) { toast('Generate QR code first'); return; }
-
-  // Draw QR onto canvas with white background
-  const canvas  = document.createElement('canvas');
-  canvas.width  = 200; canvas.height = 200;
-  const ctx     = canvas.getContext('2d');
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, 200, 200);
-
-  try {
-    // Use createImageBitmap — works even if image already loaded/cached
-    const bitmap = await createImageBitmap(qrImg);
-    ctx.drawImage(bitmap, 0, 0, 200, 200);
-    bitmap.close();
-  } catch(e) {
-    // Fallback: draw directly if already loaded
-    ctx.drawImage(qrImg, 0, 0, 200, 200);
-  }
+  // Use the named canvas directly — already has the QR drawn on it
+  const canvas = document.getElementById('qrCanvas');
+  if (!canvas) { toast('Generate QR code first'); return; }
 
   canvas.toBlob(async (blob) => {
     if (!blob) { toast('Could not create image'); return; }
