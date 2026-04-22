@@ -131,7 +131,7 @@
     margin-bottom: 12px;
   }
   .share-card-title { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 14px; }
-  #qrCanvas { border-radius: 8px; margin-bottom: 12px; }
+  #qrCodeDiv { border-radius: 8px; margin-bottom: 12px; }
   .share-url { font-family: var(--mono); font-size: 11px; color: var(--cyan); word-break: break-all; margin-bottom: 6px; }
   .share-mac { font-family: var(--mono); font-size: 13px; color: var(--yellow); letter-spacing: 2px; margin-bottom: 14px; }
   .share-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -291,7 +291,7 @@
     <div id="shareCardContainer" style="display:none; margin-top:12px;">
       <div class="share-card">
         <div class="share-card-title">Scan or Share to Grant Access</div>
-        <canvas id="qrCanvas" width="200" height="200"></canvas>
+        <div id="qrCodeDiv" style="display:inline-block;background:#fff;padding:8px;border-radius:8px;"></div>
         <div class="share-url" id="shareUrl"></div>
         <div class="share-mac" id="shareMac"></div>
         <div class="share-btns">
@@ -556,15 +556,13 @@ function generateShareCard() {
   if (!deviceMAC) { toast('No device MAC saved'); return; }
 
   const shareLink = `${PAGES_URL}?mac=${deviceMAC}`;
+  const qrDiv = document.getElementById('qrCodeDiv');
 
-  // Generate QR code onto canvas
-  const canvas = document.getElementById('qrCanvas');
-  const ctx    = canvas.getContext('2d');
-  ctx.clearRect(0, 0, 200, 200);
+  // Clear previous QR
+  qrDiv.innerHTML = '';
 
-  // Use QRCode library to draw onto a temp div then copy to canvas
-  const tempDiv = document.createElement('div');
-  new QRCode(tempDiv, {
+  // QRCode.js renders an <img> directly into the div — most reliable method
+  new QRCode(qrDiv, {
     text:         shareLink,
     width:        200,
     height:       200,
@@ -573,60 +571,42 @@ function generateShareCard() {
     correctLevel: QRCode.CorrectLevel.M
   });
 
-  // Wait for QR image to render then draw onto canvas
-  setTimeout(() => {
-    const qrImg = tempDiv.querySelector('img') || tempDiv.querySelector('canvas');
-    if (qrImg) {
-      if (qrImg.tagName === 'CANVAS') {
-        ctx.drawImage(qrImg, 0, 0, 200, 200);
-      } else {
-        const img = new Image();
-        img.onload = () => ctx.drawImage(img, 0, 0, 200, 200);
-        img.src = qrImg.src;
-      }
-    }
-  }, 100);
-
   // Update share card text
   document.getElementById('shareUrl').textContent = shareLink;
   document.getElementById('shareMac').textContent = 'MAC: ' + deviceMAC;
   document.getElementById('shareCardContainer').style.display = 'block';
 
   // Scroll to share card
-  document.getElementById('shareCardContainer').scrollIntoView({ behavior: 'smooth' });
+  setTimeout(() => {
+    document.getElementById('shareCardContainer').scrollIntoView({ behavior: 'smooth' });
+  }, 150);
 }
 
 // ── Share QR image ────────────────────────────────────────────────
 async function shareQrImage() {
-  const canvas = document.getElementById('qrCanvas');
   const shareLink = `${PAGES_URL}?mac=${deviceMAC}`;
+  const shareText = `AranyaController V5 Access\nLink: ${shareLink}\nMAC: ${deviceMAC}`;
 
-  // Convert canvas to blob
-  canvas.toBlob(async (blob) => {
+  // Get the QR image rendered by QRCode.js
+  const qrImg = document.querySelector('#qrCodeDiv img');
+
+  if (!qrImg) { toast('Generate QR code first'); return; }
+
+  try {
+    const res  = await fetch(qrImg.src);
+    const blob = await res.blob();
     const file = new File([blob], 'AranyaController-QR.png', { type: 'image/png' });
-    const shareText = `AranyaController V5 Access\nLink: ${shareLink}\nMAC: ${deviceMAC}`;
 
     if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-      try {
-        await navigator.share({
-          title: 'AranyaController V5 Access',
-          text:  shareText,
-          files: [file]
-        });
-      } catch(e) {
-        if (e.name !== 'AbortError') toast('Share cancelled');
-      }
+      await navigator.share({ title: 'AranyaController V5 Access', text: shareText, files: [file] });
     } else if (navigator.share) {
-      // Share without file (fallback)
-      try {
-        await navigator.share({ title: 'AranyaController V5', text: shareText });
-      } catch(e) {
-        if (e.name !== 'AbortError') toast('Share not supported — screenshot the QR');
-      }
+      await navigator.share({ title: 'AranyaController V5 Access', text: shareText });
     } else {
       toast('Screenshot the QR code to share');
     }
-  }, 'image/png');
+  } catch(e) {
+    if (e.name !== 'AbortError') toast('Screenshot the QR code to share');
+  }
 }
 
 // ── Share link + MAC as text ──────────────────────────────────────
