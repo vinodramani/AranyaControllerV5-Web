@@ -344,8 +344,6 @@
 
 <!-- Libraries -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/5.3.4/mqtt.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
 
 <script>
 // ── Config ────────────────────────────────────────────────────────
@@ -451,19 +449,29 @@ async function startCameraScan() {
     container.style.display = 'block';
     stopBtn.style.display   = 'block';
 
-    scanInterval = setInterval(() => {
-      const canvas = document.getElementById('cameraCanvas');
-      const ctx    = canvas.getContext('2d');
-      canvas.width  = video.videoWidth;
-      canvas.height = video.videoHeight;
-      ctx.drawImage(video, 0, 0);
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const code = jsQR(imageData.data, imageData.width, imageData.height);
-      if (code) {
-        stopCamera();
-        processQrData(code.data);
-      }
-    }, 300);
+    // Use BarcodeDetector if available — much more reliable than jsQR
+    if ('BarcodeDetector' in window) {
+      const detector = new BarcodeDetector({ formats: ['qr_code'] });
+      scanInterval = setInterval(async () => {
+        const canvas = document.getElementById('cameraCanvas');
+        canvas.width  = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0);
+        try {
+          const bitmap = await createImageBitmap(canvas);
+          const codes  = await detector.detect(bitmap);
+          bitmap.close();
+          if (codes.length > 0) {
+            stopCamera();
+            processQrData(codes[0].rawValue);
+          }
+        } catch(e) { /* keep scanning */ }
+      }, 500);
+    } else {
+      stopCamera();
+      toast('QR camera scan not supported — use Upload or Link+MAC share');
+    }
   } catch(e) {
     toast('Camera access denied');
   }
@@ -480,31 +488,34 @@ function stopCamera() {
 }
 
 // ── Upload QR image ───────────────────────────────────────────────
-function readQrFromFile(event) {
+async function readQrFromFile(event) {
   const file = event.target.files[0];
   if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const img = new Image();
-    img.onload = function() {
-      const canvas = document.createElement('canvas');
-      canvas.width  = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0);
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const code = jsQR(imageData.data, imageData.width, imageData.height);
-      if (code) {
-        processQrData(code.data);
+  event.target.value = '';
+
+  // Use native BarcodeDetector API — built into Chrome Android, no library needed
+  if ('BarcodeDetector' in window) {
+    try {
+      const detector = new BarcodeDetector({ formats: ['qr_code'] });
+      const bitmap   = await createImageBitmap(file);
+      const codes    = await detector.detect(bitmap);
+      bitmap.close();
+      if (codes.length > 0) {
+        processQrData(codes[0].rawValue);
+        return;
       } else {
         toast('No QR code found in image');
+        return;
       }
-    };
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
-  // Reset input so same file can be selected again
-  event.target.value = '';
+    } catch(e) {
+      toast('Could not read image: ' + e.message);
+      return;
+    }
+  }
+
+  // Fallback for browsers without BarcodeDetector
+  // Load image and show message to use camera instead
+  toast('QR upload not supported on this browser — use camera scan or Link+MAC share');
 }
 
 // ── Process QR data ───────────────────────────────────────────────
@@ -557,55 +568,46 @@ function generateShareCard() {
 
   const shareLink = `${PAGES_URL}?mac=${deviceMAC}`;
 
-  // Draw QR directly onto named canvas — no img element involved
-  // Use a temp div, get the canvas QRCode.js renders, copy to our named canvas
-  const tempDiv = document.createElement('div');
-  document.body.appendChild(tempDiv);
+  // Use Google Charts QR API — guaranteed valid scannable QR, no canvas corruption
+  const encodedLink = encodeURIComponent(shareLink);
+  const qrApiUrl = `https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${encodedLink}&choe=UTF-8&chld=M|2`;
 
-  new QRCode(tempDiv, {
-    text:         shareLink,
-    width:        200,
-    height:       200,
-    colorDark:    '#000000',
-    colorLight:   '#ffffff',
-    correctLevel: QRCode.CorrectLevel.M
-  });
+  const canvas = document.getElementById('qrCanvas');
+  const ctx    = canvas.getContext('2d');
 
-  // QRCode.js renders a canvas inside tempDiv when running on canvas-capable browsers
-  setTimeout(() => {
-    const srcCanvas = tempDiv.querySelector('canvas');
-    const srcImg    = tempDiv.querySelector('img');
-    const destCanvas = document.getElementById('qrCanvas');
-    const ctx = destCanvas.getContext('2d');
-
-    // White background
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = function() {
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, 220, 220);
-
-    if (srcCanvas) {
-      // Draw canvas to canvas — most reliable, no image loading
-      ctx.drawImage(srcCanvas, 10, 10, 200, 200);
-      document.body.removeChild(tempDiv);
-    } else if (srcImg) {
-      // Fallback: img element
-      if (srcImg.complete) {
-        ctx.drawImage(srcImg, 10, 10, 200, 200);
-        document.body.removeChild(tempDiv);
-      } else {
-        srcImg.onload = () => {
-          ctx.drawImage(srcImg, 10, 10, 200, 200);
-          document.body.removeChild(tempDiv);
-        };
-      }
-    }
-
+    ctx.drawImage(img, 10, 10, 200, 200);
     document.getElementById('shareUrl').textContent = shareLink;
     document.getElementById('shareMac').textContent = 'MAC: ' + deviceMAC;
     document.getElementById('shareCardContainer').style.display = 'block';
     setTimeout(() => {
       document.getElementById('shareCardContainer').scrollIntoView({ behavior: 'smooth' });
     }, 100);
-  }, 100);
+  };
+  img.onerror = function() {
+    // Fallback to QRServer API if Google Charts unavailable
+    const fallbackUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodedLink}&margin=10`;
+    const img2 = new Image();
+    img2.crossOrigin = 'anonymous';
+    img2.onload = function() {
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, 220, 220);
+      ctx.drawImage(img2, 10, 10, 200, 200);
+      document.getElementById('shareUrl').textContent = shareLink;
+      document.getElementById('shareMac').textContent = 'MAC: ' + deviceMAC;
+      document.getElementById('shareCardContainer').style.display = 'block';
+      setTimeout(() => {
+        document.getElementById('shareCardContainer').scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    };
+    img2.onerror = () => toast('QR generation failed — check internet connection');
+    img2.src = fallbackUrl;
+  };
+  img.src = qrApiUrl;
 }
 
 // ── Share QR image ────────────────────────────────────────────────
