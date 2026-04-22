@@ -587,29 +587,43 @@ async function shareQrImage() {
   const shareLink = `${PAGES_URL}?mac=${deviceMAC}`;
   const shareText = `AranyaController V5 Access\nLink: ${shareLink}\nMAC: ${deviceMAC}`;
 
-  // Get the QR image rendered by QRCode.js
   const qrImg = document.querySelector('#qrCodeDiv img');
-
   if (!qrImg) { toast('Generate QR code first'); return; }
 
-  try {
-    const res  = await fetch(qrImg.src);
-    const blob = await res.blob();
-    const file = new File([blob], 'AranyaController-QR.png', { type: 'image/png' });
+  const canvas  = document.createElement('canvas');
+  canvas.width  = 200; canvas.height = 200;
+  const ctx     = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, 200, 200);
 
-    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({ title: 'AranyaController V5 Access', text: shareText, files: [file] });
-    } else if (navigator.share) {
-      await navigator.share({ title: 'AranyaController V5 Access', text: shareText });
-    } else {
-      toast('Screenshot the QR code to share');
-    }
-  } catch(e) {
-    if (e.name !== 'AbortError') toast('Screenshot the QR code to share');
-  }
+  const img = new Image();
+  img.onload = function() {
+    ctx.drawImage(img, 0, 0, 200, 200);
+    canvas.toBlob(async (blob) => {
+      if (!blob) { toast('Could not create image'); return; }
+      const file = new File([blob], 'AranyaController-QR.png', { type: 'image/png' });
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        try { await navigator.share({ title: 'AranyaController V5 Access', text: shareText, files: [file] }); }
+        catch(e) { if (e.name !== 'AbortError') downloadQr(canvas); }
+      } else if (navigator.share) {
+        try { await navigator.share({ title: 'AranyaController V5 Access', text: shareText }); }
+        catch(e) { if (e.name !== 'AbortError') downloadQr(canvas); }
+      } else {
+        downloadQr(canvas);
+      }
+    }, 'image/png', 1.0);
+  };
+  img.src = qrImg.src;
 }
 
-// ── Share link + MAC as text ──────────────────────────────────────
+function downloadQr(canvas) {
+  const a    = document.createElement('a');
+  a.href     = canvas.toDataURL('image/png', 1.0);
+  a.download = 'AranyaController-QR.png';
+  a.click();
+  toast('QR saved — attach to email manually');
+}
+
 async function shareLinkText() {
   const shareLink = `${PAGES_URL}?mac=${deviceMAC}`;
   const text = `AranyaController V5 — Device Access\n\nOpen this link:\n${shareLink}\n\nDevice MAC: ${deviceMAC}\n\nOpen the link, tap Connect, and you're in.`;
