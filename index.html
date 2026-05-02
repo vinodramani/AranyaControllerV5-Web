@@ -42,8 +42,8 @@
   .card-label { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 10px; }
 
   /* ── Screens ── */
-  #setupScreen { display: none; }
-  #mainScreen  { display: none; }
+  .screen { display: none; }
+  .screen.active { display: block; }
 
   /* ── Setup ── */
   .setup-title { font-family: var(--mono); font-size: 13px; color: var(--yellow); margin-bottom: 8px; letter-spacing: 1px; }
@@ -61,6 +61,69 @@
   .mac-input:focus { outline: none; border-color: var(--cyan); }
   .mac-input::placeholder { color: var(--muted); letter-spacing: 1px; text-transform: none; }
 
+  /* ── Connect Mode Selection ── */
+  .mode-select-title {
+    font-family: var(--mono); font-size: 12px; color: var(--cyan);
+    letter-spacing: 1.5px; text-transform: uppercase;
+    margin-bottom: 16px; text-align: center;
+  }
+  .mode-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px; margin-bottom: 10px;
+    cursor: pointer; transition: border-color 0.2s, background 0.2s;
+  }
+  .mode-card:active { background: #1e2d3d; }
+  .mode-card-title {
+    font-family: var(--mono); font-size: 12px; letter-spacing: 1px;
+    text-transform: uppercase; margin-bottom: 4px;
+  }
+  .mode-card-title.local  { color: var(--green); }
+  .mode-card-title.remote { color: var(--blue); }
+  .mode-card-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .mode-card-arrow {
+    font-size: 18px; color: var(--muted); float: right; margin-top: -22px;
+  }
+
+  /* ── Local connect screen ── */
+  .local-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 16px;
+  }
+  .back-btn {
+    background: none; border: none; color: var(--muted); cursor: pointer;
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.5px;
+    padding: 6px 0; display: flex; align-items: center; gap: 4px;
+    flex-shrink: 0;
+  }
+  .back-btn:hover { color: var(--text); }
+  .local-screen-title {
+    font-family: var(--mono); font-size: 12px; color: var(--cyan);
+    letter-spacing: 1.5px; text-transform: uppercase;
+  }
+
+  /* Device detection result box */
+  .detect-box {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px; margin-bottom: 12px;
+  }
+  .detect-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .detect-row:last-child { margin-bottom: 0; }
+  .detect-label { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 1px; }
+  .detect-val   { font-family: var(--mono); font-size: 13px; color: var(--text); }
+  .detect-val.ok   { color: var(--green); }
+  .detect-val.warn { color: var(--yellow); }
+  .detect-val.err  { color: var(--red); }
+
+  /* MAC edit row */
+  .mac-edit-row {
+    display: flex; gap: 8px; align-items: center; margin-bottom: 12px;
+  }
+  .mac-edit-row .mac-input { margin-bottom: 0; flex: 1; font-size: 13px; }
+  .mac-edit-row .btn { width: auto; margin-bottom: 0; padding: 11px 14px; flex-shrink: 0; }
+
   /* ── Status ── */
   .status-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
   .indicator { width: 8px; height: 8px; border-radius: 50%; background: var(--red); flex-shrink: 0; box-shadow: 0 0 6px var(--red); transition: background 0.3s, box-shadow 0.3s; }
@@ -69,6 +132,16 @@
   #statusText { font-size: 13px; color: var(--red); font-family: var(--mono); transition: color 0.3s; }
   #statusText.on   { color: var(--green); }
   #statusText.warn { color: var(--yellow); }
+
+  /* Connection mode badge in main screen */
+  .conn-mode-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 1px;
+    text-transform: uppercase; padding: 3px 8px; border-radius: 20px;
+    border: 1px solid; margin-left: 8px; vertical-align: middle;
+  }
+  .conn-mode-badge.local  { color: var(--green);  border-color: var(--green); }
+  .conn-mode-badge.remote { color: var(--blue);   border-color: var(--blue); }
 
   /* ── Clock ── */
   #tvDate { font-size: 14px; color: var(--muted); font-family: var(--mono); margin-bottom: 2px; }
@@ -180,25 +253,31 @@
 
   /* hidden file input */
   #qrFileInput { display: none; }
+
+  /* spinner */
+  .spin { display: inline-block; animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
 
 <div class="header">
   <div class="header-title">AranyaController V5</div>
-  <div class="header-sub">Remote Dashboard</div>
+  <div class="header-sub" id="headerSub">Remote Dashboard</div>
 </div>
 
-<!-- ── Setup Screen ── -->
-<div id="setupScreen">
+<!-- ══════════════════════════════════════════════
+     SCREEN 1: Setup (get MAC ID)
+══════════════════════════════════════════════ -->
+<div id="setupScreen" class="screen">
   <div class="card">
     <div class="setup-title">Device Setup</div>
     <div class="setup-desc">
-      Connect once to set up. After that this page works from <strong>anywhere</strong> using mobile data.
+      First, connect to identify your device MAC ID. After setup you can connect <strong>locally</strong> or <strong>remotely</strong> from anywhere.
     </div>
 
     <!-- Option 1: Local discovery -->
-    <button class="btn btn-cyan" id="btnDiscover" onclick="discoverDevice()">Discover Device on Local WiFi</button>
+    <button class="btn btn-cyan" id="btnDiscover" onclick="goLocalSetup()">Connect Locally to Detect Device</button>
 
     <div class="setup-divider">── or ──</div>
 
@@ -227,8 +306,89 @@
   </div>
 </div>
 
-<!-- ── Main Dashboard ── -->
-<div id="mainScreen">
+<!-- ══════════════════════════════════════════════
+     SCREEN 2: Local Setup (detect & update MAC)
+══════════════════════════════════════════════ -->
+<div id="localSetupScreen" class="screen">
+  <div class="card">
+    <div class="local-header">
+      <button class="back-btn" onclick="showScreen('setupScreen')">← Back</button>
+      <div class="local-screen-title">Local Setup</div>
+    </div>
+
+    <div class="setup-desc" style="margin-bottom:14px;">
+      Make sure your phone is on the <strong>same WiFi</strong> as the Aranya device, then tap Detect.
+    </div>
+
+    <!-- Detection result box -->
+    <div class="detect-box" id="detectBox" style="display:none;">
+      <div class="detect-row">
+        <span class="detect-label">IP</span>
+        <span class="detect-val" id="detectedIP">—</span>
+      </div>
+      <div class="detect-row">
+        <span class="detect-label">MAC</span>
+        <span class="detect-val" id="detectedMAC">—</span>
+      </div>
+      <div class="detect-row">
+        <span class="detect-label">Firmware</span>
+        <span class="detect-val" id="detectedFW">—</span>
+      </div>
+      <div class="detect-row">
+        <span class="detect-label">Status</span>
+        <span class="detect-val" id="detectedStatus">—</span>
+      </div>
+    </div>
+
+    <!-- MAC override row -->
+    <div id="macEditSection" style="display:none; margin-bottom:4px;">
+      <div class="card-label" style="margin-bottom:6px;">Override MAC ID (if needed)</div>
+      <div class="mac-edit-row">
+        <input type="text" class="mac-input" id="macOverrideInput" placeholder="Detected MAC shown above" maxlength="17">
+        <button class="btn btn-yellow" onclick="updateMacOverride()" style="margin-bottom:0;">Update</button>
+      </div>
+    </div>
+
+    <button class="btn btn-cyan" id="btnDetect" onclick="detectLocalDevice()">Detect Device</button>
+
+    <!-- After successful detect: proceed buttons -->
+    <div id="localProceedSection" style="display:none; margin-top:4px;">
+      <button class="btn btn-green" onclick="proceedLocal()">✓ Connect Locally Now</button>
+      <button class="btn btn-blue"  onclick="proceedRemote()">☁ Connect Remotely (MQTT)</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SCREEN 3: Connection Mode Select
+     (shown when MAC already known)
+══════════════════════════════════════════════ -->
+<div id="modeSelectScreen" class="screen">
+  <div class="card">
+    <div class="mode-select-title">How would you like to connect?</div>
+
+    <div class="mode-card" onclick="proceedLocal()">
+      <div class="mode-card-title local">⬡ Local</div>
+      <div class="mode-card-desc">Direct connection on the same WiFi network. Fast, no internet needed.</div>
+      <div class="mode-card-arrow">›</div>
+    </div>
+
+    <div class="mode-card" onclick="proceedRemote()">
+      <div class="mode-card-title remote">☁ Remote (MQTT)</div>
+      <div class="mode-card-desc">Connect from anywhere using mobile data or any internet connection.</div>
+      <div class="mode-card-arrow">›</div>
+    </div>
+
+    <div style="margin-top:12px;">
+      <button class="btn btn-ghost" onclick="forgetDevice()">Forget Device &amp; Start Over</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SCREEN 4: Main Dashboard
+══════════════════════════════════════════════ -->
+<div id="mainScreen" class="screen">
 
   <!-- Device bar -->
   <div class="device-bar">
@@ -241,8 +401,10 @@
     <div class="status-row">
       <div class="indicator" id="statusDot"></div>
       <span id="statusText">Disconnected</span>
+      <span class="conn-mode-badge" id="connModeBadge" style="display:none;"></span>
     </div>
     <button class="btn btn-green" id="btnConnect" onclick="toggleConnect()">Connect</button>
+    <button class="btn btn-ghost" id="btnSwitchMode" onclick="switchConnectionMode()" style="margin-top:4px; font-size:11px;">Switch Connection Mode</button>
   </div>
 
   <!-- Clock card -->
@@ -287,7 +449,6 @@
     <div class="card-label">Share Device Access</div>
     <button class="btn btn-orange" onclick="generateShareCard()">Generate QR Code for Sharing</button>
 
-    <!-- Share card (hidden until generated) -->
     <div id="shareCardContainer" style="display:none; margin-top:12px;">
       <div class="share-card">
         <div class="share-card-title">Scan or Share to Grant Access</div>
@@ -355,59 +516,183 @@ const LOCAL_URL    = 'http://aranya-ctrl.local';
 const PAGES_URL    = 'https://vinodramani.github.io/AranyaControllerV5-Web/';
 
 // ── State ─────────────────────────────────────────────────────────
-let mqttClient  = null;
-let connected   = false;
-let deviceMAC   = null;
-let topicCmd    = null;
-let topicState  = null;
-let topicStatus = null;
-let lastState   = null;
-let editSlot    = -1;
-let cameraStream= null;
-let scanInterval= null;
+let mqttClient   = null;
+let connected    = false;
+let deviceMAC    = null;
+let connMode     = null;   // 'local' | 'remote'
+let localBaseUrl = LOCAL_URL;
+let topicCmd     = null;
+let topicState   = null;
+let topicStatus  = null;
+let lastState    = null;
+let editSlot     = -1;
+let cameraStream = null;
+let scanInterval = null;
+let localPollTimer = null;
 
 // ── Init ──────────────────────────────────────────────────────────
 window.onload = function() {
   // Check if MAC came in via URL parameter (from QR code scan)
-  const urlParams = new URLSearchParams(window.location.search);
+  const urlParams  = new URLSearchParams(window.location.search);
   const macFromUrl = urlParams.get('mac');
   if (macFromUrl && macFromUrl.length === 12) {
     saveMac(macFromUrl);
     toast('Device MAC loaded from QR code');
-    showMainScreen();
+    showScreen('modeSelectScreen');
     return;
   }
 
   // Check localStorage
   deviceMAC = localStorage.getItem('aranya_mac');
+  connMode  = localStorage.getItem('aranya_conn_mode');
+
   if (deviceMAC) {
-    showMainScreen();
+    showScreen('modeSelectScreen');
   } else {
-    showSetupScreen();
+    showScreen('setupScreen');
   }
 };
 
 // ── Screen switching ──────────────────────────────────────────────
-function showSetupScreen() {
-  document.getElementById('setupScreen').style.display = 'block';
-  document.getElementById('mainScreen').style.display  = 'none';
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
 }
 
+// ── Go to local setup screen ──────────────────────────────────────
+function goLocalSetup() {
+  document.getElementById('detectBox').style.display        = 'none';
+  document.getElementById('macEditSection').style.display   = 'none';
+  document.getElementById('localProceedSection').style.display = 'none';
+  document.getElementById('btnDetect').textContent          = 'Detect Device';
+  document.getElementById('btnDetect').disabled             = false;
+  showScreen('localSetupScreen');
+}
+
+// ── Detect local device ───────────────────────────────────────────
+async function detectLocalDevice() {
+  const btn = document.getElementById('btnDetect');
+  btn.innerHTML = '<span class="spin">◌</span> Detecting…';
+  btn.disabled  = true;
+  document.getElementById('detectBox').style.display        = 'none';
+  document.getElementById('macEditSection').style.display   = 'none';
+  document.getElementById('localProceedSection').style.display = 'none';
+
+  try {
+    const res = await fetch(`${LOCAL_URL}/state`, {
+      signal: AbortSignal.timeout(7000)
+    });
+    if (!res.ok) throw new Error('Bad response ' + res.status);
+    const data = await res.json();
+    if (!data.mac) throw new Error('No MAC in response');
+
+    // Save detected MAC
+    saveMac(data.mac);
+
+    // Show detection results
+    document.getElementById('detectedIP').textContent     = LOCAL_URL.replace('http://','');
+    document.getElementById('detectedIP').className       = 'detect-val ok';
+    document.getElementById('detectedMAC').textContent    = data.mac;
+    document.getElementById('detectedMAC').className      = 'detect-val ok';
+    document.getElementById('detectedFW').textContent     = data.fw || data.firmware || 'V5';
+    document.getElementById('detectedFW').className       = 'detect-val';
+    document.getElementById('detectedStatus').textContent = 'Detected OK';
+    document.getElementById('detectedStatus').className   = 'detect-val ok';
+
+    // Pre-fill override input with current MAC
+    document.getElementById('macOverrideInput').value = data.mac;
+
+    document.getElementById('detectBox').style.display        = 'block';
+    document.getElementById('macEditSection').style.display   = 'block';
+    document.getElementById('localProceedSection').style.display = 'block';
+
+    btn.textContent = 'Re-Detect';
+    btn.disabled    = false;
+    toast('Device found: ' + data.mac);
+
+  } catch(e) {
+    document.getElementById('detectedIP').textContent     = LOCAL_URL.replace('http://','');
+    document.getElementById('detectedIP').className       = 'detect-val warn';
+    document.getElementById('detectedMAC').textContent    = '—';
+    document.getElementById('detectedMAC').className      = 'detect-val err';
+    document.getElementById('detectedFW').textContent     = '—';
+    document.getElementById('detectedFW').className       = 'detect-val';
+    document.getElementById('detectedStatus').textContent = 'Not found';
+    document.getElementById('detectedStatus').className   = 'detect-val err';
+
+    document.getElementById('detectBox').style.display      = 'block';
+    document.getElementById('macEditSection').style.display = 'none';
+    document.getElementById('localProceedSection').style.display = 'none';
+
+    btn.textContent = 'Retry Detect';
+    btn.disabled    = false;
+    toast('Device not found — check WiFi');
+  }
+}
+
+// ── Update MAC from override input ────────────────────────────────
+function updateMacOverride() {
+  const raw = document.getElementById('macOverrideInput').value.replace(/[^a-fA-F0-9]/g, '');
+  if (raw.length !== 12) {
+    toast('MAC must be 12 hex characters');
+    return;
+  }
+  saveMac(raw.toUpperCase());
+  document.getElementById('detectedMAC').textContent = raw.toUpperCase();
+  document.getElementById('detectedMAC').className   = 'detect-val warn'; // warn = manually set
+  toast('MAC updated to ' + raw.toUpperCase());
+}
+
+// ── Proceed: local mode ───────────────────────────────────────────
+function proceedLocal() {
+  connMode = 'local';
+  localStorage.setItem('aranya_conn_mode', 'local');
+  showMainScreen();
+}
+
+// ── Proceed: remote (MQTT) mode ───────────────────────────────────
+function proceedRemote() {
+  connMode = 'remote';
+  localStorage.setItem('aranya_conn_mode', 'remote');
+  showMainScreen();
+}
+
+// ── Switch mode from main screen ──────────────────────────────────
+function switchConnectionMode() {
+  if (mqttClient)    { mqttClient.end(true); mqttClient = null; }
+  if (localPollTimer){ clearInterval(localPollTimer); localPollTimer = null; }
+  connected = false;
+  resetDisplay();
+  showScreen('modeSelectScreen');
+}
+
+// ── Show main dashboard ───────────────────────────────────────────
 function showMainScreen() {
   topicCmd    = `aranyasmart/${deviceMAC}/cmd`;
   topicState  = `aranyasmart/${deviceMAC}/state`;
   topicStatus = `aranyasmart/${deviceMAC}/status`;
-  document.getElementById('macDisplay').textContent    = deviceMAC;
-  document.getElementById('setupScreen').style.display = 'none';
-  document.getElementById('mainScreen').style.display  = 'block';
+
+  document.getElementById('macDisplay').textContent = deviceMAC;
+  document.getElementById('headerSub').textContent  =
+    connMode === 'local' ? 'Local Mode' : 'Remote Mode';
+
+  // Update connection mode badge
+  const badge = document.getElementById('connModeBadge');
+  if (connMode === 'local') {
+    badge.textContent = '⬡ Local';
+    badge.className   = 'conn-mode-badge local';
+  } else {
+    badge.textContent = '☁ Remote';
+    badge.className   = 'conn-mode-badge remote';
+  }
+  badge.style.display = 'inline-flex';
+
+  showScreen('mainScreen');
   renderEmptySlots();
 }
 
 // ── Local discovery ───────────────────────────────────────────────
 async function discoverDevice() {
-  const btn = document.getElementById('btnDiscover');
-  btn.textContent = 'Discovering…';
-  btn.disabled = true;
   try {
     const res = await fetch(`${LOCAL_URL}/state`, {
       signal: AbortSignal.timeout(6000)
@@ -416,12 +701,9 @@ async function discoverDevice() {
     const data = await res.json();
     if (!data.mac) throw new Error('No MAC in response');
     saveMac(data.mac);
-    toast('Device found: ' + data.mac);
-    showMainScreen();
+    return data;
   } catch(e) {
-    toast('Not found — try another method below');
-    btn.textContent = 'Discover Device on Local WiFi';
-    btn.disabled = false;
+    return null;
   }
 }
 
@@ -434,7 +716,7 @@ function saveMacManually() {
   }
   saveMac(raw.toUpperCase());
   toast('MAC saved');
-  showMainScreen();
+  showScreen('modeSelectScreen');
 }
 
 // ── Camera QR scan ────────────────────────────────────────────────
@@ -451,7 +733,6 @@ async function startCameraScan() {
     container.style.display = 'block';
     stopBtn.style.display   = 'block';
 
-    // Use BarcodeDetector if available — much more reliable than jsQR
     if ('BarcodeDetector' in window) {
       const detector = new BarcodeDetector({ formats: ['qr_code'] });
       scanInterval = setInterval(async () => {
@@ -495,7 +776,6 @@ async function readQrFromFile(event) {
   if (!file) return;
   event.target.value = '';
 
-  // Use native BarcodeDetector API — built into Chrome Android, no library needed
   if ('BarcodeDetector' in window) {
     try {
       const detector = new BarcodeDetector({ formats: ['qr_code'] });
@@ -514,32 +794,27 @@ async function readQrFromFile(event) {
       return;
     }
   }
-
-  // Fallback for browsers without BarcodeDetector
-  // Load image and show message to use camera instead
   toast('QR upload not supported on this browser — use camera scan or Link+MAC share');
 }
 
 // ── Process QR data ───────────────────────────────────────────────
 function processQrData(data) {
-  // QR contains full URL with mac parameter
   try {
-    const url    = new URL(data);
-    const mac    = url.searchParams.get('mac');
+    const url = new URL(data);
+    const mac = url.searchParams.get('mac');
     if (mac && mac.length === 12) {
       saveMac(mac.toUpperCase());
       toast('QR scanned — MAC saved');
-      showMainScreen();
+      showScreen('modeSelectScreen');
       return;
     }
   } catch(e) { /* not a URL */ }
 
-  // Maybe QR contains just the MAC
   const raw = data.replace(/[^a-fA-F0-9]/g, '');
   if (raw.length === 12) {
     saveMac(raw.toUpperCase());
     toast('QR scanned — MAC saved');
-    showMainScreen();
+    showScreen('modeSelectScreen');
     return;
   }
 
@@ -548,7 +823,7 @@ function processQrData(data) {
 
 // ── Save MAC ──────────────────────────────────────────────────────
 function saveMac(mac) {
-  deviceMAC  = mac.replace(/[^a-fA-F0-9]/gi, '').toUpperCase();
+  deviceMAC = mac.replace(/[^a-fA-F0-9]/gi, '').toUpperCase();
   localStorage.setItem('aranya_mac', deviceMAC);
 }
 
@@ -556,120 +831,96 @@ function saveMac(mac) {
 function forgetDevice() {
   if (!confirm('Forget this device? You will need to set it up again.')) return;
   localStorage.removeItem('aranya_mac');
-  if (mqttClient) mqttClient.end(true);
-  mqttClient = null;
+  localStorage.removeItem('aranya_conn_mode');
+  if (mqttClient)    { mqttClient.end(true); mqttClient = null; }
+  if (localPollTimer){ clearInterval(localPollTimer); localPollTimer = null; }
   connected  = false;
   deviceMAC  = null;
+  connMode   = null;
   document.getElementById('shareCardContainer').style.display = 'none';
-  showSetupScreen();
+  showScreen('setupScreen');
 }
 
-// ── Generate share card ───────────────────────────────────────────
-function generateShareCard() {
-  if (!deviceMAC) { toast('No device MAC saved'); return; }
-
-  const shareLink = `${PAGES_URL}?mac=${deviceMAC}`;
-
-  // Use Google Charts QR API — guaranteed valid scannable QR, no canvas corruption
-  const encodedLink = encodeURIComponent(shareLink);
-  const qrApiUrl = `https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${encodedLink}&choe=UTF-8&chld=M|2`;
-
-  const canvas = document.getElementById('qrCanvas');
-  const ctx    = canvas.getContext('2d');
-
-  const img = new Image();
-  img.crossOrigin = 'anonymous';
-  img.onload = function() {
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, 220, 220);
-    ctx.drawImage(img, 10, 10, 200, 200);
-    document.getElementById('shareUrl').textContent = shareLink;
-    document.getElementById('shareMac').textContent = 'MAC: ' + deviceMAC;
-    document.getElementById('shareCardContainer').style.display = 'block';
-    setTimeout(() => {
-      document.getElementById('shareCardContainer').scrollIntoView({ behavior: 'smooth' });
-    }, 100);
-  };
-  img.onerror = function() {
-    // Fallback to QRServer API if Google Charts unavailable
-    const fallbackUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodedLink}&margin=10`;
-    const img2 = new Image();
-    img2.crossOrigin = 'anonymous';
-    img2.onload = function() {
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, 220, 220);
-      ctx.drawImage(img2, 10, 10, 200, 200);
-      document.getElementById('shareUrl').textContent = shareLink;
-      document.getElementById('shareMac').textContent = 'MAC: ' + deviceMAC;
-      document.getElementById('shareCardContainer').style.display = 'block';
-      setTimeout(() => {
-        document.getElementById('shareCardContainer').scrollIntoView({ behavior: 'smooth' });
-      }, 100);
-    };
-    img2.onerror = () => toast('QR generation failed — check internet connection');
-    img2.src = fallbackUrl;
-  };
-  img.src = qrApiUrl;
-}
-
-// ── Share QR image ────────────────────────────────────────────────
-async function shareQrImage() {
-  const shareLink = `${PAGES_URL}?mac=${deviceMAC}`;
-  const shareText = `AranyaController V5 Access\nLink: ${shareLink}\nMAC: ${deviceMAC}`;
-
-  // Use the named canvas directly — already has the QR drawn on it
-  const canvas = document.getElementById('qrCanvas');
-  if (!canvas) { toast('Generate QR code first'); return; }
-
-  canvas.toBlob(async (blob) => {
-    if (!blob) { toast('Could not create image'); return; }
-    const file = new File([blob], 'AranyaController-QR.png', { type: 'image/png' });
-    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-      try {
-        await navigator.share({ title: 'AranyaController V5 Access', text: shareText, files: [file] });
-      } catch(e) { if (e.name !== 'AbortError') downloadQr(canvas); }
-    } else if (navigator.share) {
-      try {
-        await navigator.share({ title: 'AranyaController V5 Access', text: shareText });
-      } catch(e) { if (e.name !== 'AbortError') downloadQr(canvas); }
-    } else {
-      downloadQr(canvas);
-    }
-  }, 'image/png', 1.0);
-}
-
-function downloadQr(canvas) {
-  const a    = document.createElement('a');
-  a.href     = canvas.toDataURL('image/png', 1.0);
-  a.download = 'AranyaController-QR.png';
-  a.click();
-  toast('QR saved — attach to email manually');
-}
-
-async function shareLinkText() {
-  const shareLink = `${PAGES_URL}?mac=${deviceMAC}`;
-  const text = `AranyaController V5 — Device Access\n\nOpen this link:\n${shareLink}\n\nDevice MAC: ${deviceMAC}\n\nOpen the link, tap Connect, and you're in.`;
-
-  if (navigator.share) {
-    try {
-      await navigator.share({ title: 'AranyaController V5 Access', text: text });
-    } catch(e) {
-      if (e.name !== 'AbortError') copyToClipboard(shareLink);
-    }
+// ── Toggle connect ────────────────────────────────────────────────
+function toggleConnect() {
+  if (connected) {
+    disconnectAll();
   } else {
-    copyToClipboard(shareLink);
+    if (connMode === 'local') localConnect();
+    else mqttConnect();
   }
 }
 
-function copyToClipboard(text) {
-  navigator.clipboard?.writeText(text).then(() => toast('Link copied to clipboard'));
+function disconnectAll() {
+  if (mqttClient)    { mqttClient.end(true); mqttClient = null; }
+  if (localPollTimer){ clearInterval(localPollTimer); localPollTimer = null; }
+  connected = false;
+  setStatus('Disconnected', 'off');
+  document.getElementById('btnConnect').textContent = 'Connect';
+  setControlsEnabled(false);
+  resetDisplay();
 }
 
-// ── MQTT ──────────────────────────────────────────────────────────
-function toggleConnect() {
-  connected ? mqttDisconnect() : mqttConnect();
+// ── Local HTTP connect ────────────────────────────────────────────
+async function localConnect() {
+  setStatus('Connecting locally…', 'warn');
+  document.getElementById('btnConnect').disabled = true;
+
+  try {
+    const res = await fetch(`${localBaseUrl}/state`, {
+      signal: AbortSignal.timeout(6000)
+    });
+    if (!res.ok) throw new Error('Bad response');
+    const data = await res.json();
+
+    connected = true;
+    setStatus('Device Connected (Local)', 'on');
+    document.getElementById('btnConnect').textContent = 'Disconnect';
+    document.getElementById('btnConnect').disabled    = false;
+    setControlsEnabled(true);
+    applyState(data);
+
+    // Start polling
+    localPollTimer = setInterval(async () => {
+      try {
+        const r = await fetch(`${localBaseUrl}/state`, { signal: AbortSignal.timeout(4000) });
+        if (!r.ok) throw new Error();
+        const s = await r.json();
+        applyState(s);
+      } catch(e) {
+        clearInterval(localPollTimer);
+        localPollTimer = null;
+        connected = false;
+        setStatus('Device Disconnected', 'off');
+        document.getElementById('btnConnect').textContent = 'Connect';
+        setControlsEnabled(false);
+        resetDisplay();
+        toast('Local connection lost');
+      }
+    }, 3000);
+
+  } catch(e) {
+    setStatus('Local connect failed', 'off');
+    document.getElementById('btnConnect').disabled = false;
+    toast('Could not reach device — check WiFi');
+  }
 }
 
+// ── Local HTTP publish ────────────────────────────────────────────
+async function publishLocal(payload) {
+  try {
+    await fetch(`${localBaseUrl}/cmd`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(5000)
+    });
+  } catch(e) {
+    toast('Command failed — check connection');
+  }
+}
+
+// ── MQTT connect ──────────────────────────────────────────────────
 function mqttConnect() {
   setStatus('Connecting…', 'warn');
   document.getElementById('btnConnect').disabled = true;
@@ -687,7 +938,6 @@ function mqttConnect() {
     document.getElementById('btnConnect').disabled    = false;
     mqttClient.subscribe(topicState,  { qos: 0 });
     mqttClient.subscribe(topicStatus, { qos: 1 });
-    // Request current state — if device is online it will respond
     publish({ cmd: 'get_state' });
   });
 
@@ -695,7 +945,7 @@ function mqttConnect() {
     const msg = payload.toString();
     if (topic === topicStatus) {
       if (msg === 'online') {
-        setStatus('Device Online', 'on');
+        setStatus('Device Online (Remote)', 'on');
         setControlsEnabled(true);
       } else {
         setStatus('Device Offline', 'off');
@@ -724,18 +974,14 @@ function mqttConnect() {
   });
 }
 
-function mqttDisconnect() {
-  if (mqttClient) { mqttClient.end(true); mqttClient = null; }
-  connected = false;
-  setStatus('Disconnected', 'off');
-  document.getElementById('btnConnect').textContent = 'Connect';
-  setControlsEnabled(false);
-  resetDisplay();
-}
-
+// ── Unified publish ───────────────────────────────────────────────
 function publish(payload) {
-  if (!mqttClient || !connected) { toast('Not connected'); return; }
-  mqttClient.publish(topicCmd, JSON.stringify(payload), { qos: 0, retain: false });
+  if (connMode === 'local') {
+    publishLocal(payload);
+  } else {
+    if (!mqttClient || !connected) { toast('Not connected'); return; }
+    mqttClient.publish(topicCmd, JSON.stringify(payload), { qos: 0, retain: false });
+  }
 }
 
 // ── Apply state ───────────────────────────────────────────────────
@@ -851,6 +1097,93 @@ function savePumpSchedule() {
 function clearPumpSlot(slot) {
   publish({ cmd:'set_schedule', type:'pump', index:slot, onH:0, onM:0, enabled:false });
   toast(`Pump slot ${slot+1} cleared`);
+}
+
+// ── Generate share card ───────────────────────────────────────────
+function generateShareCard() {
+  if (!deviceMAC) { toast('No device MAC saved'); return; }
+
+  const shareLink  = `${PAGES_URL}?mac=${deviceMAC}`;
+  const encodedLink = encodeURIComponent(shareLink);
+  const qrApiUrl   = `https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${encodedLink}&choe=UTF-8&chld=M|2`;
+
+  const canvas = document.getElementById('qrCanvas');
+  const ctx    = canvas.getContext('2d');
+
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = function() {
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, 220, 220);
+    ctx.drawImage(img, 10, 10, 200, 200);
+    document.getElementById('shareUrl').textContent = shareLink;
+    document.getElementById('shareMac').textContent = 'MAC: ' + deviceMAC;
+    document.getElementById('shareCardContainer').style.display = 'block';
+    setTimeout(() => document.getElementById('shareCardContainer').scrollIntoView({ behavior: 'smooth' }), 100);
+  };
+  img.onerror = function() {
+    const fallbackUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodedLink}&margin=10`;
+    const img2 = new Image();
+    img2.crossOrigin = 'anonymous';
+    img2.onload = function() {
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, 220, 220);
+      ctx.drawImage(img2, 10, 10, 200, 200);
+      document.getElementById('shareUrl').textContent = shareLink;
+      document.getElementById('shareMac').textContent = 'MAC: ' + deviceMAC;
+      document.getElementById('shareCardContainer').style.display = 'block';
+    };
+    img2.onerror = () => toast('QR generation failed — check internet connection');
+    img2.src = fallbackUrl;
+  };
+  img.src = qrApiUrl;
+}
+
+// ── Share helpers ─────────────────────────────────────────────────
+async function shareQrImage() {
+  const shareLink = `${PAGES_URL}?mac=${deviceMAC}`;
+  const shareText = `AranyaController V5 Access\nLink: ${shareLink}\nMAC: ${deviceMAC}`;
+  const canvas = document.getElementById('qrCanvas');
+  if (!canvas) { toast('Generate QR code first'); return; }
+  canvas.toBlob(async (blob) => {
+    if (!blob) { toast('Could not create image'); return; }
+    const file = new File([blob], 'AranyaController-QR.png', { type: 'image/png' });
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ title: 'AranyaController V5 Access', text: shareText, files: [file] });
+      } catch(e) { if (e.name !== 'AbortError') downloadQr(canvas); }
+    } else if (navigator.share) {
+      try {
+        await navigator.share({ title: 'AranyaController V5 Access', text: shareText });
+      } catch(e) { if (e.name !== 'AbortError') downloadQr(canvas); }
+    } else {
+      downloadQr(canvas);
+    }
+  }, 'image/png', 1.0);
+}
+
+function downloadQr(canvas) {
+  const a    = document.createElement('a');
+  a.href     = canvas.toDataURL('image/png', 1.0);
+  a.download = 'AranyaController-QR.png';
+  a.click();
+  toast('QR saved — attach to email manually');
+}
+
+async function shareLinkText() {
+  const shareLink = `${PAGES_URL}?mac=${deviceMAC}`;
+  const text = `AranyaController V5 — Device Access\n\nOpen this link:\n${shareLink}\n\nDevice MAC: ${deviceMAC}\n\nOpen the link, tap Connect, and you're in.`;
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: 'AranyaController V5 Access', text: text });
+    } catch(e) { if (e.name !== 'AbortError') copyToClipboard(shareLink); }
+  } else {
+    copyToClipboard(shareLink);
+  }
+}
+
+function copyToClipboard(text) {
+  navigator.clipboard?.writeText(text).then(() => toast('Link copied to clipboard'));
 }
 
 // ── UI helpers ────────────────────────────────────────────────────
