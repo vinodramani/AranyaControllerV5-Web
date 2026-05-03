@@ -317,8 +317,10 @@
     </div>
 
     <div class="setup-desc" style="margin-bottom:14px;">
-      Make sure your phone is on the <strong>same WiFi</strong> as the Aranya device, then tap Detect.
+      Make sure your phone is on the <strong>same WiFi</strong> as the Aranya device. Enter the device IP (shown on TFT display) then tap Detect.
     </div>
+    <input type="text" class="mac-input" id="localIpInput" placeholder="Device IP  e.g. 192.168.1.100"
+      style="letter-spacing:0; text-transform:none; font-size:14px; margin-bottom:8px;">
 
     <!-- Detection result box -->
     <div class="detect-box" id="detectBox" style="display:none;">
@@ -513,7 +515,9 @@ const BROKER_PORT  = 8084;
 const BROKER_USER  = 'AranyaAdmin';
 const BROKER_PASS  = '123Smart@';
 const LOCAL_URL    = 'http://aranya-ctrl.local';
-const PAGES_URL    = 'https://vinodramani.github.io/AranyaControllerV5-Web/';
+const PAGES_URL      = 'https://vinodramani.github.io/AranyaControllerV5-Web/';
+const TOPIC_DISCOVER = 'aranyasmart/discover';
+const TOPIC_WILDCARD = 'aranyasmart/+/state';
 
 // ── State ─────────────────────────────────────────────────────────
 let mqttClient   = null;
@@ -572,6 +576,10 @@ function goLocalSetup() {
 // ── Detect local device ───────────────────────────────────────────
 async function detectLocalDevice() {
   const btn = document.getElementById('btnDetect');
+  const ipVal = document.getElementById('localIpInput').value.trim();
+  if (ipVal) localBaseUrl = 'http://' + ipVal;
+  else       localBaseUrl = LOCAL_URL;
+
   btn.innerHTML = '<span class="spin">◌</span> Detecting…';
   btn.disabled  = true;
   document.getElementById('detectBox').style.display        = 'none';
@@ -579,7 +587,7 @@ async function detectLocalDevice() {
   document.getElementById('localProceedSection').style.display = 'none';
 
   try {
-    const res = await fetch(`${LOCAL_URL}/state`, {
+    const res = await fetch(`${localBaseUrl}/state`, {
       signal: AbortSignal.timeout(7000)
     });
     if (!res.ok) throw new Error('Bad response ' + res.status);
@@ -590,7 +598,7 @@ async function detectLocalDevice() {
     saveMac(data.mac);
 
     // Show detection results
-    document.getElementById('detectedIP').textContent     = LOCAL_URL.replace('http://','');
+    document.getElementById('detectedIP').textContent     = localBaseUrl.replace('http://','');
     document.getElementById('detectedIP').className       = 'detect-val ok';
     document.getElementById('detectedMAC').textContent    = data.mac;
     document.getElementById('detectedMAC').className      = 'detect-val ok';
@@ -611,7 +619,7 @@ async function detectLocalDevice() {
     toast('Device found: ' + data.mac);
 
   } catch(e) {
-    document.getElementById('detectedIP').textContent     = LOCAL_URL.replace('http://','');
+    document.getElementById('detectedIP').textContent     = localBaseUrl.replace('http://','');
     document.getElementById('detectedIP').className       = 'detect-val warn';
     document.getElementById('detectedMAC').textContent    = '—';
     document.getElementById('detectedMAC').className      = 'detect-val err';
@@ -943,6 +951,27 @@ function mqttConnect() {
 
   mqttClient.on('message', (topic, payload) => {
     const msg = payload.toString();
+
+    // Auto-detect MAC from wildcard subscription
+    if (!deviceMAC && topic.startsWith('aranyasmart/') && topic.endsWith('/state')) {
+      const parts = topic.split('/');
+      if (parts.length >= 2 && parts[1].length === 12) {
+        const mac = parts[1];
+        saveMac(mac);
+        topicCmd    = 'aranyasmart/' + deviceMAC + '/cmd';
+        topicState  = 'aranyasmart/' + deviceMAC + '/state';
+        topicStatus = 'aranyasmart/' + deviceMAC + '/status';
+        mqttClient.unsubscribe(TOPIC_WILDCARD);
+        mqttClient.subscribe(topicState,  { qos: 0 });
+        mqttClient.subscribe(topicStatus, { qos: 1 });
+        document.getElementById('macDisplay').textContent = deviceMAC;
+        toast('Device detected: ' + mac);
+        try { applyState(JSON.parse(msg)); setControlsEnabled(true);
+              setStatus('Device Online (Remote)', 'on'); } catch(e) {}
+        return;
+      }
+    }
+
     if (topic === topicStatus) {
       if (msg === 'online') {
         setStatus('Device Online (Remote)', 'on');
@@ -953,7 +982,11 @@ function mqttConnect() {
         resetDisplay();
       }
     } else if (topic === topicState) {
-      try { applyState(JSON.parse(msg)); } catch(e) {}
+      try {
+        applyState(JSON.parse(msg));
+        setStatus('Device Online (Remote)', 'on');
+        setControlsEnabled(true);
+      } catch(e) {}
     }
   });
 
