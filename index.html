@@ -317,9 +317,9 @@
     </div>
 
     <div class="setup-desc" style="margin-bottom:14px;">
-      Make sure your phone is on the <strong>same WiFi</strong> as the Aranya device. Enter the device IP (shown on TFT display) then tap Detect.
+      Make sure your phone is on the <strong>same WiFi</strong> as the Aranya device, then tap Detect.
     </div>
-    <input type="text" class="mac-input" id="localIpInput" placeholder="Device IP  e.g. 192.168.1.100"
+    <input type="text" class="mac-input" id="localIpInput" placeholder="Device IP (optional — leave blank to auto-detect)"
       style="letter-spacing:0; text-transform:none; font-size:14px; margin-bottom:8px;">
 
     <!-- Detection result box -->
@@ -371,8 +371,13 @@
 
     <div class="mode-card" onclick="proceedLocal()">
       <div class="mode-card-title local">⬡ Local</div>
-      <div class="mode-card-desc">Direct connection on the same WiFi network. Fast, no internet needed.</div>
+      <div class="mode-card-desc">Direct connection on the same WiFi network. Opens device dashboard on your browser. No internet needed.</div>
       <div class="mode-card-arrow">›</div>
+    </div>
+    <div style="margin-bottom:10px;">
+      <input type="text" class="mac-input" id="modeLocalIp" placeholder="Device IP  e.g. 192.168.1.100"
+        style="letter-spacing:0; text-transform:none; font-size:13px; margin-bottom:6px;">
+      <div class="setup-desc" style="font-size:11px;">Enter device IP if known, or leave blank to try auto-detect (aranya-ctrl.local)</div>
     </div>
 
     <div class="mode-card" onclick="proceedRemote()">
@@ -614,6 +619,9 @@ async function detectLocalDevice() {
     document.getElementById('macEditSection').style.display   = 'block';
     document.getElementById('localProceedSection').style.display = 'block';
 
+    // Store the working URL for local dashboard redirect
+    window._localDashUrl = localBaseUrl;
+
     btn.textContent = 'Re-Detect';
     btn.disabled    = false;
     toast('Device found: ' + data.mac);
@@ -651,11 +659,20 @@ function updateMacOverride() {
   toast('MAC updated to ' + raw.toUpperCase());
 }
 
-// ── Proceed: local mode ───────────────────────────────────────────
+// ── Proceed: local mode — redirect to device's built-in dashboard ─
 function proceedLocal() {
-  connMode = 'local';
-  localStorage.setItem('aranya_conn_mode', 'local');
-  showMainScreen();
+  // Check IP from mode select screen first, then setup detect, then mDNS fallback
+  const ipField = document.getElementById('modeLocalIp');
+  const ipVal   = ipField ? ipField.value.trim() : '';
+  let url;
+  if (ipVal) {
+    url = 'http://' + ipVal;
+  } else if (window._localDashUrl && window._localDashUrl !== LOCAL_URL) {
+    url = window._localDashUrl;
+  } else {
+    url = 'http://aranya-ctrl.local';
+  }
+  window.location.href = url + '/';
 }
 
 // ── Proceed: remote (MQTT) mode ───────────────────────────────────
